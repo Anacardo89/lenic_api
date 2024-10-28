@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package lenic;
+option go_package = "github.com/anacardo89/lenic_api";
+
+service AuthService {
+    rpc Login(LoginRequest) returns (LoginResponse);
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string token = 1;
+}
+
+service Lenic {
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+    rpc ActivateUser(ActivateUserRequest) returns (ActivateUserResponse);
+    rpc GetUser(GetUserRequest) returns (GetUserResponse);
+    rpc SearchUsers(SearchUsersRequest) returns (stream SearchUsersResponse);
+    rpc GetUserFollowers(GetUserFollowersRequest) returns (stream GetUserFollowersResponse);
+    rpc GetUserFollowing(GetUserFollowingRequest) returns (stream GetUserFollowingResponse);
+    rpc FollowUser(FollowUserRequest) returns (FollowUserResponse);
+    rpc AcceptFollow(AcceptFolowRequest) returns (AcceptFollowResponse);
+    rpc UnfollowUser(UnfollowUserRequest) returns (UnfollowUserResponse);
+    rpc UpdateUserPass(UpdateUserPassRequest) returns (UpdateUserPassResponse);
+    rpc UpdateUserProfilePic(UpdateUserProfilePicRequest) returns (UpdateUserProfilePicResponse);
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+    rpc StartConversation(StartConversationRequest) returns (StartConversationResponse);
+    rpc GetUserConversations(GetUserConversationsRequest) returns (stream GetUserConversationsResponse);
+    rpc ReadConversation(ReadConversationRequest) returns (ReadConversationResponse);
+    rpc SendDM(SendDMRequest) returns (SendDMResponse);
+    rpc GetConversationDMs(GetConversationDMsRequest) returns (GetConversationDMsResponse);
+    rpc GetUserNotifications(GetUserNotificationsRequest) returns (GetUserNotificationsResponse);
+    rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
+    rpc GetPost(GetPostRequest) returns (GetPostResponse);
+    rpc GetPostPic(GetPostPicRequest) returns (GetPostPicResponse);
+    rpc GetUserPosts(GetUserPostsRequest) returns (stream GetUserPostsResponse);
+    rpc GetUserPublicPosts(GetUserPublicPostsRequest) returns (stream GetUserPublicPPostsResponse);
+    rpc RatePost(RatePostRequest) returns (RatePostResponse);
+    rpc UpdatePost(UpdatePostRequest) returns (UpdatePostResponse);
+    rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
+    rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse);
+    rpc GetComment(GetCommentRequest) returns (GetCommentResponser);
+    rpc GetCommentsFromPost(GetCommentsFromPostRequest) returns (stream GetCommentsFromPostResponse);
+    rpc RateComment(RateCommentRequest) returns (RateCommentResponse);
+    rpc UpdateComment(UpdateCommentRequest) returns (UpdateCommentResponse);
+    rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
+}
