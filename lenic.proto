@@ -1,10 +1,12 @@
 syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
+
 package lenic;
 option go_package = "github.com/anacardo89/lenic_api";
 
 service AuthService {
-    rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
 }
 
 message LoginRequest {
@@ -17,36 +19,135 @@ message LoginResponse {
 }
 
 service Lenic {
-    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
-    rpc ActivateUser(ActivateUserRequest) returns (ActivateUserResponse);
-    rpc GetUser(GetUserRequest) returns (GetUserResponse);
-    rpc SearchUsers(SearchUsersRequest) returns (stream SearchUsersResponse);
-    rpc GetUserFollowers(GetUserFollowersRequest) returns (stream GetUserFollowersResponse);
-    rpc GetUserFollowing(GetUserFollowingRequest) returns (stream GetUserFollowingResponse);
-    rpc FollowUser(FollowUserRequest) returns (FollowUserResponse);
-    rpc AcceptFollow(AcceptFolowRequest) returns (AcceptFollowResponse);
-    rpc UnfollowUser(UnfollowUserRequest) returns (UnfollowUserResponse);
-    rpc UpdateUserPass(UpdateUserPassRequest) returns (UpdateUserPassResponse);
-    rpc UpdateUserProfilePic(UpdateUserProfilePicRequest) returns (UpdateUserProfilePicResponse);
-    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
-    rpc StartConversation(StartConversationRequest) returns (StartConversationResponse);
-    rpc GetUserConversations(GetUserConversationsRequest) returns (stream GetUserConversationsResponse);
-    rpc ReadConversation(ReadConversationRequest) returns (ReadConversationResponse);
-    rpc SendDM(SendDMRequest) returns (SendDMResponse);
-    rpc GetConversationDMs(GetConversationDMsRequest) returns (GetConversationDMsResponse);
-    rpc GetUserNotifications(GetUserNotificationsRequest) returns (GetUserNotificationsResponse);
-    rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
-    rpc GetPost(GetPostRequest) returns (GetPostResponse);
-    rpc GetPostPic(GetPostPicRequest) returns (GetPostPicResponse);
-    rpc GetUserPosts(GetUserPostsRequest) returns (stream GetUserPostsResponse);
-    rpc GetUserPublicPosts(GetUserPublicPostsRequest) returns (stream GetUserPublicPPostsResponse);
-    rpc RatePost(RatePostRequest) returns (RatePostResponse);
-    rpc UpdatePost(UpdatePostRequest) returns (UpdatePostResponse);
-    rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
-    rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse);
-    rpc GetComment(GetCommentRequest) returns (GetCommentResponser);
-    rpc GetCommentsFromPost(GetCommentsFromPostRequest) returns (stream GetCommentsFromPostResponse);
-    rpc RateComment(RateCommentRequest) returns (RateCommentResponse);
-    rpc UpdateComment(UpdateCommentRequest) returns (UpdateCommentResponse);
-    rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
+  rpc CreateUser(User) returns (google.protobuf.Int32Value);
+  rpc ActivateUser(google.protobuf.StringValue) returns (google.protobuf.StringValue);
+  rpc GetUser(google.protobuf.StringValue) returns (User);
+  rpc SearchUsers(google.protobuf.StringValue) returns (stream User);
+  rpc TagUser(google.protobuf.StringValue, Tag) returns (google.protobuf.StringValue);
+  rpc GetUserFollowers(google.protobuf.Int32Value) returns (stream User);
+  rpc GetUserFollowing(google.protobuf.Int32Value) returns (stream User);
+  rpc FollowUser(Follow) returns (google.protobuf.StringValue);
+  rpc AcceptFollow(Follow) returns (google.protobuf.StringValue);
+  rpc UnfollowUser(Follow) returns (google.protobuf.StringValue);
+  rpc UpdateUserPass(User) returns (google.protobuf.StringValue);
+  rpc UpdateUserProfilePic(User) returns (google.protobuf.StringValue);
+  rpc DeleteUser(google.protobuf.StringValue) returns (google.protobuf.StringValue);
+  rpc StartConversation(Conversation) returns (google.protobuf.Int32Value);
+  rpc GetUserConversations(google.protobuf.StringValue) returns (stream Conversation);
+  rpc ReadConversation(google.protobuf.Int32Value) returns (google.protobuf.StringValue);
+  rpc SendDM(DM) returns (google.protobuf.Int32Value);
+  rpc GetConversationDMs(google.protobuf.Int32Value) returns (stream DM);
+  rpc CreateNotification(Notification) returns (google.protobuf.Int32Value);
+  rpc GetUserNotifications(google.protobuf.StringValue) returns (stream Notification);
+  rpc ReadNotification(google.protobuf.Int32Value) returns (google.protobuf.Int32Value);
+  rpc CreatePost(Post) returns (google.protobuf.Int32Value);
+  rpc GetPost(google.protobuf.StringValue) returns (Post);
+  rpc GetPostPic(google.protobuf.StringValue) returns (Post);
+  rpc GetUserPosts(google.protobuf.StringValue) returns (stream Post);
+  rpc GetUserPublicPosts(google.protobuf.StringValue) returns (stream Post);
+  rpc RatePost(PostRating) returns (google.protobuf.StringValue);
+  rpc UpdatePost(Post) returns (google.protobuf.StringValue);
+  rpc DeletePost(google.protobuf.StringValue) returns (google.protobuf.StringValue);
+  rpc CreateComment(Comment) returns (google.protobuf.Int32Value);
+  rpc GetComment(google.protobuf.Int32Value) returns (Comment);
+  rpc GetCommentsFromPost(google.protobuf.StringValue) returns (stream Comment);
+  rpc RateComment(CommentRatind) returns (google.protobuf.StringValue);
+  rpc UpdateComment(Comment) returns (google.protobuf.StringValue);
+  rpc DeleteComment(google.protobuf.StringValue) returns (google.protobuf.StringValue);
+}
+
+message User {
+  int32 id = 1:
+  string username = 2;
+  string email = 3;
+  string hashpass = 4;
+  string profile_pic = 5;
+  string profile_pic_ext = 6;
+  int32 user_followers = 7;
+  int32 user_following = 8;
+  string created_at = 9;
+  string updated_at = 10;
+  int32 active = 11;
+}
+
+message Follow {
+  int32 follower_id = 1;
+  int32 followed_id = 2;
+  int32 follow_status = 3;
+}
+
+message Tag {
+  int32 id = 1;
+  int32 user_id = 2;
+  int32 post_id = 3;
+  int32 comment_id = 4;
+  string tag_place = 5;
+}
+
+message Notification {
+  int32 id = 1;
+  int32 user_id = 2;
+  int32 from_user_id = 3;
+  string notif_type = 4;
+  string notif_message = 5;
+  string resource_id = 6;
+  string parent_id = 6;
+  bool is_read = 7
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message Conversation {
+  int32 id = 1;
+  int32 user1_id = 2;
+  int32 user2_id = 3;
+  string created_at = 4;
+  string updated_at = 5;
+}
+
+message DM {
+  int32 id = 1;
+  int32 conversation_id = 2;
+  int32 sender_id = 3;
+  string content = 4;
+  bool is_read = 5;
+  string created_at = 6;
+}
+
+message Post {
+  int32 id = 1;
+  string post_guid = 2;
+  int32 author_id = 3;
+  string title = 4;
+  string content = 5;
+  string post_image = 6;
+  string image_ext = 7;
+  string created_at = 8;
+  string updated_at = 9;
+  bool is_public = 10;
+  int32 rating = 11;
+  bool active = 12;
+}
+
+message PostRating {
+  int32 post_id = 1;
+  int32 user_id = 2;
+  int32 rating_value = 3;
+}
+
+message Comment {
+  int32 id = 1;
+  string post_guid = 2;
+  int32 author_id = 3;
+  string content = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  int32 rating = 7;
+  bool active = 8; 
+}
+
+message CommentRating {
+  int32 comment_id = 1;
+  int32 user_id = 2;
+  int32 rating_value = 3;
 }
