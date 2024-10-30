@@ -23,7 +23,7 @@ service Lenic {
   rpc ActivateUser(google.protobuf.StringValue) returns (google.protobuf.StringValue);
   rpc GetUser(google.protobuf.StringValue) returns (User);
   rpc SearchUsers(google.protobuf.StringValue) returns (stream User);
-  rpc TagUser(google.protobuf.StringValue, Tag) returns (google.protobuf.StringValue);
+  rpc TagUser(Tag) returns (google.protobuf.StringValue);
   rpc GetUserFollowers(google.protobuf.Int32Value) returns (stream User);
   rpc GetUserFollowing(google.protobuf.Int32Value) returns (stream User);
   rpc FollowUser(Follow) returns (google.protobuf.StringValue);
@@ -51,13 +51,13 @@ service Lenic {
   rpc CreateComment(Comment) returns (google.protobuf.Int32Value);
   rpc GetComment(google.protobuf.Int32Value) returns (Comment);
   rpc GetCommentsFromPost(google.protobuf.StringValue) returns (stream Comment);
-  rpc RateComment(CommentRatind) returns (google.protobuf.StringValue);
+  rpc RateComment(CommentRating) returns (google.protobuf.StringValue);
   rpc UpdateComment(Comment) returns (google.protobuf.StringValue);
   rpc DeleteComment(google.protobuf.StringValue) returns (google.protobuf.StringValue);
 }
 
 message User {
-  int32 id = 1:
+  int32 id = 1;
   string username = 2;
   string email = 3;
   string hashpass = 4;
@@ -91,10 +91,10 @@ message Notification {
   string notif_type = 4;
   string notif_message = 5;
   string resource_id = 6;
-  string parent_id = 6;
-  bool is_read = 7
-  string created_at = 8;
-  string updated_at = 9;
+  string parent_id = 7;
+  bool is_read = 8;
+  string created_at = 9;
+  string updated_at = 10;
 }
 
 message Conversation {
