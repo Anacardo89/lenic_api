@@ -23,3 +23,8 @@ go.work.sum
 
 # env file
 .env
+
+*.yaml
+cmd/img
+cmd/logs
+cmd/ssl
