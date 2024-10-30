@@ -25,6 +25,5 @@ go.work.sum
 .env
 
 *.yaml
-cmd/img
-cmd/logs
-cmd/ssl
+/cmd/logs
+/cmd/ssl
