@@ -60,14 +60,15 @@ message User {
   int32 id = 1;
   string username = 2;
   string email = 3;
-  string hashpass = 4;
-  string profile_pic = 5;
-  string profile_pic_ext = 6;
-  int32 user_followers = 7;
-  int32 user_following = 8;
-  string created_at = 9;
-  string updated_at = 10;
-  int32 active = 11;
+  string pass = 4;
+  string hashpass = 5;
+  string profile_pic = 6;
+  string profile_pic_ext = 7;
+  int32 user_followers = 8;
+  int32 user_following = 9;
+  string created_at = 10;
+  string updated_at = 11;
+  int32 active = 12;
 }
 
 message Follow {
