@@ -1,7 +1,5 @@
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
-github.com/Anacardo89/tpsi25_blog v0.0.0-20240924184425-511073d9c77e h1:KNj306WHhkFlvBYTAtjoYIg5dc5BI8tPT+/+ibtAung=
-github.com/Anacardo89/tpsi25_blog v0.0.0-20240924184425-511073d9c77e/go.mod h1:nT7gJ5ms+UUZ1wHoTWLCLwMcGne+J5hKaVhZqLAepE8=
 github.com/go-sql-driver/mysql v1.8.1 h1:LedoTUt/eveggdHS9qUFC1EFSa8bU2+1pZjSRpvNJ1Y=
 github.com/go-sql-driver/mysql v1.8.1/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqwuVSjsCm7DZg=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=

@@ -168,8 +168,8 @@ type LenicClient interface {
 	GetUser(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*User, error)
 	SearchUsers(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
 	TagUser(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	GetUserFollowers(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
-	GetUserFollowing(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
+	GetUserFollowers(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
+	GetUserFollowing(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
 	FollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
 	AcceptFollow(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
 	UnfollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
@@ -267,13 +267,13 @@ func (c *lenicClient) TagUser(ctx context.Context, in *Tag, opts ...grpc.CallOpt
 	return out, nil
 }
 
-func (c *lenicClient) GetUserFollowers(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error) {
+func (c *lenicClient) GetUserFollowers(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[1], Lenic_GetUserFollowers_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[wrapperspb.Int32Value, User]{ClientStream: stream}
+	x := &grpc.GenericClientStream[wrapperspb.StringValue, User]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -286,13 +286,13 @@ func (c *lenicClient) GetUserFollowers(ctx context.Context, in *wrapperspb.Int32
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserFollowersClient = grpc.ServerStreamingClient[User]
 
-func (c *lenicClient) GetUserFollowing(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error) {
+func (c *lenicClient) GetUserFollowing(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[2], Lenic_GetUserFollowing_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[wrapperspb.Int32Value, User]{ClientStream: stream}
+	x := &grpc.GenericClientStream[wrapperspb.StringValue, User]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -648,8 +648,8 @@ type LenicServer interface {
 	GetUser(context.Context, *wrapperspb.StringValue) (*User, error)
 	SearchUsers(*wrapperspb.StringValue, grpc.ServerStreamingServer[User]) error
 	TagUser(context.Context, *Tag) (*wrapperspb.StringValue, error)
-	GetUserFollowers(*wrapperspb.Int32Value, grpc.ServerStreamingServer[User]) error
-	GetUserFollowing(*wrapperspb.Int32Value, grpc.ServerStreamingServer[User]) error
+	GetUserFollowers(*wrapperspb.StringValue, grpc.ServerStreamingServer[User]) error
+	GetUserFollowing(*wrapperspb.StringValue, grpc.ServerStreamingServer[User]) error
 	FollowUser(context.Context, *Follow) (*wrapperspb.StringValue, error)
 	AcceptFollow(context.Context, *Follow) (*wrapperspb.StringValue, error)
 	UnfollowUser(context.Context, *Follow) (*wrapperspb.StringValue, error)
@@ -703,10 +703,10 @@ func (UnimplementedLenicServer) SearchUsers(*wrapperspb.StringValue, grpc.Server
 func (UnimplementedLenicServer) TagUser(context.Context, *Tag) (*wrapperspb.StringValue, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TagUser not implemented")
 }
-func (UnimplementedLenicServer) GetUserFollowers(*wrapperspb.Int32Value, grpc.ServerStreamingServer[User]) error {
+func (UnimplementedLenicServer) GetUserFollowers(*wrapperspb.StringValue, grpc.ServerStreamingServer[User]) error {
 	return status.Errorf(codes.Unimplemented, "method GetUserFollowers not implemented")
 }
-func (UnimplementedLenicServer) GetUserFollowing(*wrapperspb.Int32Value, grpc.ServerStreamingServer[User]) error {
+func (UnimplementedLenicServer) GetUserFollowing(*wrapperspb.StringValue, grpc.ServerStreamingServer[User]) error {
 	return status.Errorf(codes.Unimplemented, "method GetUserFollowing not implemented")
 }
 func (UnimplementedLenicServer) FollowUser(context.Context, *Follow) (*wrapperspb.StringValue, error) {
@@ -898,22 +898,22 @@ func _Lenic_TagUser_Handler(srv interface{}, ctx context.Context, dec func(inter
 }
 
 func _Lenic_GetUserFollowers_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(wrapperspb.Int32Value)
+	m := new(wrapperspb.StringValue)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LenicServer).GetUserFollowers(m, &grpc.GenericServerStream[wrapperspb.Int32Value, User]{ServerStream: stream})
+	return srv.(LenicServer).GetUserFollowers(m, &grpc.GenericServerStream[wrapperspb.StringValue, User]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserFollowersServer = grpc.ServerStreamingServer[User]
 
 func _Lenic_GetUserFollowing_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(wrapperspb.Int32Value)
+	m := new(wrapperspb.StringValue)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LenicServer).GetUserFollowing(m, &grpc.GenericServerStream[wrapperspb.Int32Value, User]{ServerStream: stream})
+	return srv.(LenicServer).GetUserFollowing(m, &grpc.GenericServerStream[wrapperspb.StringValue, User]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.

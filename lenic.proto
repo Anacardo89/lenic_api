@@ -3,7 +3,7 @@ syntax = "proto3";
 import "google/protobuf/wrappers.proto";
 
 package lenic;
-option go_package = "github.com/anacardo89/lenic_api";
+option go_package = "github.com/anacardo89/lenic_api/internal/pb";
 
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
@@ -24,8 +24,8 @@ service Lenic {
   rpc GetUser(google.protobuf.StringValue) returns (User);
   rpc SearchUsers(google.protobuf.StringValue) returns (stream User);
   rpc TagUser(Tag) returns (google.protobuf.StringValue);
-  rpc GetUserFollowers(google.protobuf.Int32Value) returns (stream User);
-  rpc GetUserFollowing(google.protobuf.Int32Value) returns (stream User);
+  rpc GetUserFollowers(google.protobuf.StringValue) returns (stream User);
+  rpc GetUserFollowing(google.protobuf.StringValue) returns (stream User);
   rpc FollowUser(Follow) returns (google.protobuf.StringValue);
   rpc AcceptFollow(Follow) returns (google.protobuf.StringValue);
   rpc UnfollowUser(Follow) returns (google.protobuf.StringValue);
