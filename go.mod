@@ -3,7 +3,6 @@ module github.com/Anacardo89/lenic_api
 go 1.23.0
 
 require (
-	github.com/Anacardo89/tpsi25_blog v0.0.0-20240924184425-511073d9c77e
 	github.com/go-sql-driver/mysql v1.8.1
 	golang.org/x/crypto v0.26.0
 	google.golang.org/grpc v1.67.1

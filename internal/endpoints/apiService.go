@@ -3,6 +3,7 @@ package endpoints
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -25,27 +26,27 @@ func (s *ApiService) CreateUser(ctx context.Context, in *pb.User) (*wrapperspb.I
 
 	_, err := orm.Da.GetUserByName(in.Username)
 	if err != sql.ErrNoRows {
-		return nil, fmt.Errorf("User already exists")
+		return nil, errors.New("user already exists")
 	}
 
 	_, err = orm.Da.GetUserByEmail(in.Email)
 	if err != sql.ErrNoRows {
-		return nil, fmt.Errorf("Email already exists")
+		return nil, errors.New("email already exists")
 	}
 
 	hashPass, err := auth.HashPassword(in.Pass)
 	if err != nil {
-		return nil, fmt.Errorf("Could not hash password", err)
+		return nil, fmt.Errorf("could not hash password: %v", err)
 	}
 
 	createdAt, err := time.Parse(layout, string(in.CreatedAt))
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse created at", err)
+		return nil, fmt.Errorf("could not parse created at: %v", err)
 	}
 
 	updatedAt, err := time.Parse(layout, string(in.UpdatedAt))
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse updated at", err)
+		return nil, fmt.Errorf("could not parse updated at: %v", err)
 	}
 
 	u := &model.User{
@@ -64,15 +65,135 @@ func (s *ApiService) CreateUser(ctx context.Context, in *pb.User) (*wrapperspb.I
 
 	res, err := orm.Da.CreateUser(u)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating user", err)
+		return nil, fmt.Errorf("error creating user: %v", err)
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		return nil, fmt.Errorf("Error getting id", err)
+		return nil, fmt.Errorf("error getting id: %v", err)
 	}
 
 	id32 := int32(id)
 
 	return wrapperspb.Int32(id32), nil
+}
+
+func (s *ApiService) ActivateUser(ctx context.Context, in *wrapperspb.StringValue) (*wrapperspb.StringValue, error) {
+	err := orm.Da.SetUserAsActive(in.Value)
+	if err != nil {
+		return nil, fmt.Errorf("could not activate user: %v", err)
+	}
+	return in, nil
+}
+
+func (s *ApiService) GetUser(ctx context.Context, in *wrapperspb.StringValue) (*pb.User, error) {
+	u, err := orm.Da.GetUserByName(in.Value)
+	if err != nil {
+		return nil, fmt.Errorf("could not get user: %v", err)
+	}
+	user := pb.User{
+		Id:            int32(u.Id),
+		Username:      u.UserName,
+		Email:         u.Email,
+		UserFollowers: int32(u.Followers),
+		UserFollowing: int32(u.Following),
+		CreatedAt:     u.CreatedAt.Format(layout),
+		UpdatedAt:     u.UpdatedAt.Format(layout),
+		Active:        int32(u.Active),
+	}
+	return &user, nil
+}
+
+func (s *ApiService) SearchUsers(in *wrapperspb.StringValue, stream pb.Lenic_SearchUsersServer) error {
+	users, err := orm.Da.GetSearchUsers(in.Value)
+	if err != nil {
+		return fmt.Errorf("could not get users: %v", err)
+	}
+	for _, u := range *users {
+		user := pb.User{
+			Id:            int32(u.Id),
+			Username:      u.UserName,
+			Email:         u.Email,
+			UserFollowers: int32(u.Followers),
+			UserFollowing: int32(u.Following),
+			CreatedAt:     u.CreatedAt.Format(layout),
+			UpdatedAt:     u.UpdatedAt.Format(layout),
+			Active:        int32(u.Active),
+		}
+		err := stream.Send(&user)
+		if err != nil {
+			return fmt.Errorf("error sending message to stream: %v", err)
+		}
+	}
+	return nil
+}
+
+func (s *ApiService) GetUserFollowers(in *wrapperspb.StringValue, stream pb.Lenic_GetUserFollowersServer) error {
+
+	user, err := orm.Da.GetUserByName(in.Value)
+	if err != nil {
+		return fmt.Errorf("could not get user by name: %v", err)
+	}
+
+	follows, err := orm.Da.GetFollowers(user.Id)
+	if err != nil {
+		return fmt.Errorf("could not get users: %v", err)
+	}
+
+	for _, f := range *follows {
+		u, err := orm.Da.GetUserByID(f.FollowerId)
+		if err != nil {
+			return fmt.Errorf("could not get Id from follower: %v", err)
+		}
+		u_out := pb.User{
+			Id:            int32(u.Id),
+			Username:      u.UserName,
+			Email:         u.Email,
+			UserFollowers: int32(u.Followers),
+			UserFollowing: int32(u.Following),
+			CreatedAt:     u.CreatedAt.Format(layout),
+			UpdatedAt:     u.UpdatedAt.Format(layout),
+			Active:        int32(u.Active),
+		}
+		err = stream.Send(&u_out)
+		if err != nil {
+			return fmt.Errorf("error sending message to stream: %v", err)
+		}
+	}
+	return nil
+}
+
+func (s *ApiService) GetUserFollowing(in *wrapperspb.StringValue, stream pb.Lenic_GetUserFollowingServer) error {
+
+	user, err := orm.Da.GetUserByName(in.Value)
+	if err != nil {
+		return fmt.Errorf("could not get user by name: %v", err)
+	}
+
+	follows, err := orm.Da.GetFollowing(user.Id)
+	if err != nil {
+		return fmt.Errorf("could not get users: %v", err)
+	}
+
+	for _, f := range *follows {
+		u, err := orm.Da.GetUserByID(f.FollowedId)
+		if err != nil {
+			return fmt.Errorf("could not get Id from follower: %v", err)
+		}
+		u_out := pb.User{
+			Id:            int32(u.Id),
+			Username:      u.UserName,
+			Email:         u.Email,
+			UserFollowers: int32(u.Followers),
+			UserFollowing: int32(u.Following),
+			CreatedAt:     u.CreatedAt.Format(layout),
+			UpdatedAt:     u.UpdatedAt.Format(layout),
+			Active:        int32(u.Active),
+		}
+		err = stream.Send(&u_out)
+		if err != nil {
+			return fmt.Errorf("error sending message to stream: %v", err)
+		}
+	}
+	return nil
 }
