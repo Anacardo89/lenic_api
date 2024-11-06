@@ -41,10 +41,8 @@ const (
 		WHERE username = ?
 	;`
 
-	UpdateProfilePic = `
-	UPDATE users
-		SET profile_pic=?,
-			profile_pic_ext=?
+	DeleteUser = `
+	DELETE FROM users
 		WHERE username=?
 	;`
 

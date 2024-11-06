@@ -23,14 +23,12 @@ service Lenic {
   rpc ActivateUser(google.protobuf.StringValue) returns (google.protobuf.StringValue);
   rpc GetUser(google.protobuf.StringValue) returns (User);
   rpc SearchUsers(google.protobuf.StringValue) returns (stream User);
-  rpc TagUser(Tag) returns (google.protobuf.StringValue);
   rpc GetUserFollowers(google.protobuf.StringValue) returns (stream User);
   rpc GetUserFollowing(google.protobuf.StringValue) returns (stream User);
   rpc FollowUser(Follow) returns (google.protobuf.StringValue);
   rpc AcceptFollow(Follow) returns (google.protobuf.StringValue);
   rpc UnfollowUser(Follow) returns (google.protobuf.StringValue);
   rpc UpdateUserPass(User) returns (google.protobuf.StringValue);
-  rpc UpdateUserProfilePic(User) returns (google.protobuf.StringValue);
   rpc DeleteUser(google.protobuf.StringValue) returns (google.protobuf.StringValue);
   rpc StartConversation(Conversation) returns (google.protobuf.Int32Value);
   rpc GetUserConversations(google.protobuf.StringValue) returns (stream Conversation);

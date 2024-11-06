@@ -179,6 +179,14 @@ func (da *DataAccess) SetNewPassword(user string, pass string) error {
 	return nil
 }
 
+func (da *DataAccess) DeleteUser(user string) error {
+	_, err := da.Db.Exec(query.DeleteUser, user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (da *DataAccess) GetUserFollows(follower_id int, followed_id int) (*model.Follows, error) {
 	f := model.Follows{}
 	row := da.Db.QueryRow(query.SelectUserFollows, follower_id, followed_id)
@@ -246,12 +254,12 @@ func (da *DataAccess) GetFollowing(follower_id int) (*[]model.Follows, error) {
 	return &follows, nil
 }
 
-func (da *DataAccess) FollowUser(follower_id int, followed_id int) error {
-	_, err := da.Db.Exec(query.FollowUser, follower_id, followed_id)
+func (da *DataAccess) FollowUser(follower_id int, followed_id int) (sql.Result, error) {
+	res, err := da.Db.Exec(query.FollowUser, follower_id, followed_id)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return res, nil
 }
 
 func (da *DataAccess) AcceptFollow(follower_id int, followed_id int) error {
@@ -265,14 +273,6 @@ func (da *DataAccess) AcceptFollow(follower_id int, followed_id int) error {
 
 func (da *DataAccess) UnfollowUser(follower_id int, followed_id int) error {
 	_, err := da.Db.Exec(query.UnfollowUser, follower_id, followed_id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (da *DataAccess) UpdateProfilePic(profile_pic string, profile_pic_ext string, username string) error {
-	_, err := da.Db.Exec(query.UpdateProfilePic, profile_pic, profile_pic_ext, username)
 	if err != nil {
 		return err
 	}
