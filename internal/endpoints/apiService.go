@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/Anacardo89/lenic_api/internal/data/model"
 	"github.com/Anacardo89/lenic_api/internal/data/orm"
@@ -39,28 +38,11 @@ func (s *ApiService) CreateUser(ctx context.Context, in *pb.User) (*wrapperspb.I
 		return nil, fmt.Errorf("could not hash password: %v", err)
 	}
 
-	createdAt, err := time.Parse(layout, string(in.CreatedAt))
-	if err != nil {
-		return nil, fmt.Errorf("could not parse created at: %v", err)
-	}
-
-	updatedAt, err := time.Parse(layout, string(in.UpdatedAt))
-	if err != nil {
-		return nil, fmt.Errorf("could not parse updated at: %v", err)
-	}
-
 	u := &model.User{
-		Id:            int(in.Id),
-		UserName:      string(in.Username),
-		Email:         string(in.Email),
-		HashPass:      hashPass,
-		ProfilePic:    string(in.ProfilePic),
-		ProfilePicExt: string(in.ProfilePicExt),
-		Followers:     int(in.UserFollowers),
-		Following:     int(in.UserFollowing),
-		CreatedAt:     createdAt,
-		UpdatedAt:     updatedAt,
-		Active:        int(in.Active),
+		UserName: string(in.Username),
+		Email:    string(in.Email),
+		HashPass: hashPass,
+		Active:   0,
 	}
 
 	res, err := orm.Da.CreateUser(u)
@@ -198,21 +180,14 @@ func (s *ApiService) GetUserFollowing(in *wrapperspb.StringValue, stream pb.Leni
 	return nil
 }
 
-func (s *ApiService) FollowUser(ctx context.Context, in *pb.Follow) (*wrapperspb.Int32Value, error) {
+func (s *ApiService) FollowUser(ctx context.Context, in *pb.Follow) (*wrapperspb.StringValue, error) {
 
-	res, err := orm.Da.FollowUser(int(in.FollowerId), int(in.FollowedId))
+	_, err := orm.Da.FollowUser(int(in.FollowerId), int(in.FollowedId))
 	if err != nil {
 		return nil, fmt.Errorf("error following user: %v", err)
 	}
 
-	id, err := res.LastInsertId()
-	if err != nil {
-		return nil, fmt.Errorf("error getting id: %v", err)
-	}
-
-	id32 := int32(id)
-
-	return wrapperspb.Int32(id32), nil
+	return &wrapperspb.StringValue{Value: "OK"}, nil
 }
 
 func (s *ApiService) AcceptFollow(ctx context.Context, in *pb.Follow) (*wrapperspb.StringValue, error) {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"log"
 	"net"
 
@@ -10,10 +9,8 @@ import (
 	"github.com/Anacardo89/lenic_api/internal/pb"
 	"github.com/Anacardo89/lenic_api/internal/server"
 	"github.com/Anacardo89/lenic_api/pkg/db"
-	"github.com/Anacardo89/lenic_api/pkg/fsops"
 	"github.com/Anacardo89/lenic_api/pkg/logger"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 func main() {
@@ -31,13 +28,6 @@ func main() {
 	}
 	logger.Info.Println("Connecting to DB OK")
 
-	// Certificate
-	cert, err := tls.LoadX509KeyPair(fsops.SSLCertificate, fsops.SSLkey)
-	if err != nil {
-		logger.Error.Fatalln("failed to load key pair: ", err)
-	}
-	logger.Info.Println("Loading SSL Certificates OK")
-
 	// Server
 	server.Server, err = config.LoadServerConfig()
 	if err != nil {
@@ -45,9 +35,7 @@ func main() {
 	}
 	logger.Info.Println("Loading serverConfig OK")
 
-	opts := []grpc.ServerOption{
-		grpc.Creds(credentials.NewServerTLSFromCert(&cert)),
-	}
+	opts := []grpc.ServerOption{}
 
 	s := grpc.NewServer(opts...)
 
