@@ -197,3 +197,57 @@ func (s *ApiService) GetUserFollowing(in *wrapperspb.StringValue, stream pb.Leni
 	}
 	return nil
 }
+
+func (s *ApiService) FollowUser(ctx context.Context, in *pb.Follow) (*wrapperspb.Int32Value, error) {
+
+	res, err := orm.Da.FollowUser(int(in.FollowerId), int(in.FollowedId))
+	if err != nil {
+		return nil, fmt.Errorf("error following user: %v", err)
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return nil, fmt.Errorf("error getting id: %v", err)
+	}
+
+	id32 := int32(id)
+
+	return wrapperspb.Int32(id32), nil
+}
+
+func (s *ApiService) AcceptFollow(ctx context.Context, in *pb.Follow) (*wrapperspb.StringValue, error) {
+
+	err := orm.Da.AcceptFollow(int(in.FollowerId), int(in.FollowedId))
+	if err != nil {
+		return nil, fmt.Errorf("error accepting follow: %v", err)
+	}
+
+	return &wrapperspb.StringValue{Value: "OK"}, nil
+}
+
+func (s *ApiService) UnfollowUser(ctx context.Context, in *pb.Follow) (*wrapperspb.StringValue, error) {
+
+	err := orm.Da.UnfollowUser(int(in.FollowerId), int(in.FollowedId))
+	if err != nil {
+		return nil, fmt.Errorf("error unfollowing: %v", err)
+	}
+
+	return &wrapperspb.StringValue{Value: "OK"}, nil
+}
+
+func (s *ApiService) UpdateUserPass(ctx context.Context, in *pb.User) (*wrapperspb.StringValue, error) {
+	err := orm.Da.SetNewPassword(in.Username, in.Pass)
+	if err != nil {
+		return nil, fmt.Errorf("could not update password: %v", err)
+	}
+	return wrapperspb.String("OK"), nil
+}
+
+func (s *ApiService) DeleteUser(ctx context.Context, in *wrapperspb.StringValue) (*wrapperspb.StringValue, error) {
+	err := orm.Da.DeleteUser(in.Value)
+	if err != nil {
+		return nil, fmt.Errorf("could not delete user: %v", err)
+	}
+	return wrapperspb.String("OK"), nil
+
+}
