@@ -90,9 +90,9 @@ func (da *DataAccess) GetConversationByUserIds(user1_id int, user2_id int) (*mod
 	return &c, nil
 }
 
-func (da *DataAccess) GetConversationsByUserId(user_id int, limit int, offset int) ([]*model.Conversation, error) {
+func (da *DataAccess) GetConversationsByUserId(user_id int) ([]*model.Conversation, error) {
 	conversations := []*model.Conversation{}
-	rows, err := da.Db.Query(query.SelectConversationsByUserId, user_id, user_id, limit, offset)
+	rows, err := da.Db.Query(query.SelectConversationsByUserId, user_id, user_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return conversations, nil
@@ -175,9 +175,9 @@ func (da *DataAccess) GetLastDMBySenderInConversation(converrsation_id int, send
 	return &m, nil
 }
 
-func (da *DataAccess) GetDMsByConversationId(conversation_id int, limit int, offset int) ([]*model.DMessage, error) {
+func (da *DataAccess) GetDMsByConversationId(conversation_id int) ([]*model.DMessage, error) {
 	dms := []*model.DMessage{}
-	rows, err := da.Db.Query(query.SelectDMsByConversationId, conversation_id, limit, offset)
+	rows, err := da.Db.Query(query.SelectDMsByConversationId, conversation_id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return dms, nil

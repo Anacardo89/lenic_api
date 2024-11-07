@@ -9,8 +9,8 @@ import (
 	"github.com/Anacardo89/lenic_api/pkg/db"
 )
 
-func (da *DataAccess) CreatePost(p *model.Post) error {
-	_, err := da.Db.Exec(query.InsertPost,
+func (da *DataAccess) CreatePost(p *model.Post) (sql.Result, error) {
+	res, err := da.Db.Exec(query.InsertPost,
 		p.GUID,
 		p.AuthorId,
 		p.Title,
@@ -20,7 +20,7 @@ func (da *DataAccess) CreatePost(p *model.Post) error {
 		p.IsPublic,
 		p.Rating,
 		p.Active)
-	return err
+	return res, err
 }
 
 func (da *DataAccess) GetFeed(user_id int) (*[]model.Post, error) {
@@ -214,6 +214,41 @@ func (da *DataAccess) GetPostByGUID(guid string) (*model.Post, error) {
 	)
 	p := model.Post{}
 	row := da.Db.QueryRow(query.SelectPostByGUID, guid)
+	err := row.Scan(
+		&p.Id,
+		&p.GUID,
+		&p.AuthorId,
+		&p.Title,
+		&p.Content,
+		&p.Image,
+		&p.ImageExt,
+		&createdAt,
+		&updatedAt,
+		&p.IsPublic,
+		&p.Rating,
+		&p.Active,
+	)
+	if err != nil {
+		return nil, err
+	}
+	p.CreatedAt, err = time.Parse(db.DateLayout, string(createdAt))
+	if err != nil {
+		return nil, err
+	}
+	p.UpdatedAt, err = time.Parse(db.DateLayout, string(updatedAt))
+	if err != nil {
+		return nil, err
+	}
+	return &p, nil
+}
+
+func (da *DataAccess) GetPostByID(id int) (*model.Post, error) {
+	var (
+		createdAt []byte
+		updatedAt []byte
+	)
+	p := model.Post{}
+	row := da.Db.QueryRow(query.SelectPostByGUID, id)
 	err := row.Scan(
 		&p.Id,
 		&p.GUID,

@@ -29,7 +29,6 @@ const (
 	SELECT * FROM conversations
 		WHERE user1_id=? OR user2_id=?
 			ORDER BY updated_at DESC
-			LIMIT ? OFFSET ?
 	;`
 
 	SelectDMById = `
@@ -47,7 +46,6 @@ const (
 	SELECT * FROM dmessages
 		WHERE conversation_id=?
 			ORDER BY created_at
-			LIMIT ? OFFSET ?
 	;`
 
 	UpdateConversationById = `
