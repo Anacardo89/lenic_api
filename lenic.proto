@@ -39,13 +39,16 @@ service Lenic {
   rpc GetPost(google.protobuf.StringValue) returns (Post);
   rpc GetUserPosts(google.protobuf.StringValue) returns (stream Post);
   rpc GetUserPublicPosts(google.protobuf.StringValue) returns (stream Post);
-  rpc RatePost(PostRating) returns (google.protobuf.StringValue);
+  rpc GetFeed(google.protobuf.StringValue) returns (stream Post);
+  rpc RatePostUp(PostRating) returns (google.protobuf.StringValue);
+  rpc RatePostDown(PostRating) returns (google.protobuf.StringValue);
   rpc UpdatePost(Post) returns (google.protobuf.StringValue);
   rpc DeletePost(google.protobuf.StringValue) returns (google.protobuf.StringValue);
   rpc CreateComment(Comment) returns (google.protobuf.Int32Value);
   rpc GetComment(google.protobuf.Int32Value) returns (Comment);
   rpc GetCommentsFromPost(google.protobuf.StringValue) returns (stream Comment);
-  rpc RateComment(CommentRating) returns (google.protobuf.StringValue);
+  rpc RateCommentUp(CommentRating) returns (google.protobuf.StringValue);
+  rpc RateCommentDown(CommentRating) returns (google.protobuf.StringValue);
   rpc UpdateComment(Comment) returns (google.protobuf.StringValue);
   rpc DeleteComment(google.protobuf.Int32Value) returns (google.protobuf.StringValue);
 }
@@ -101,7 +104,6 @@ message Post {
 message PostRating {
   int32 post_id = 1;
   int32 user_id = 2;
-  int32 rating_value = 3;
 }
 
 message Comment {
@@ -118,5 +120,4 @@ message Comment {
 message CommentRating {
   int32 comment_id = 1;
   int32 user_id = 2;
-  int32 rating_value = 3;
 }

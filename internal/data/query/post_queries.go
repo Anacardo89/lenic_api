@@ -45,6 +45,11 @@ const (
 		ORDER BY created_at DESC
 	;`
 
+	SelectPostByID = `
+	SELECT * FROM posts
+		WHERE id=?
+	;`
+
 	SelectPostByGUID = `
 	SELECT * FROM posts
 		WHERE post_guid=?
