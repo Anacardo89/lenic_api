@@ -142,13 +142,16 @@ const (
 	Lenic_GetPost_FullMethodName              = "/lenic.Lenic/GetPost"
 	Lenic_GetUserPosts_FullMethodName         = "/lenic.Lenic/GetUserPosts"
 	Lenic_GetUserPublicPosts_FullMethodName   = "/lenic.Lenic/GetUserPublicPosts"
-	Lenic_RatePost_FullMethodName             = "/lenic.Lenic/RatePost"
+	Lenic_GetFeed_FullMethodName              = "/lenic.Lenic/GetFeed"
+	Lenic_RatePostUp_FullMethodName           = "/lenic.Lenic/RatePostUp"
+	Lenic_RatePostDown_FullMethodName         = "/lenic.Lenic/RatePostDown"
 	Lenic_UpdatePost_FullMethodName           = "/lenic.Lenic/UpdatePost"
 	Lenic_DeletePost_FullMethodName           = "/lenic.Lenic/DeletePost"
 	Lenic_CreateComment_FullMethodName        = "/lenic.Lenic/CreateComment"
 	Lenic_GetComment_FullMethodName           = "/lenic.Lenic/GetComment"
 	Lenic_GetCommentsFromPost_FullMethodName  = "/lenic.Lenic/GetCommentsFromPost"
-	Lenic_RateComment_FullMethodName          = "/lenic.Lenic/RateComment"
+	Lenic_RateCommentUp_FullMethodName        = "/lenic.Lenic/RateCommentUp"
+	Lenic_RateCommentDown_FullMethodName      = "/lenic.Lenic/RateCommentDown"
 	Lenic_UpdateComment_FullMethodName        = "/lenic.Lenic/UpdateComment"
 	Lenic_DeleteComment_FullMethodName        = "/lenic.Lenic/DeleteComment"
 )
@@ -177,13 +180,16 @@ type LenicClient interface {
 	GetPost(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*Post, error)
 	GetUserPosts(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error)
 	GetUserPublicPosts(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error)
-	RatePost(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
+	GetFeed(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error)
+	RatePostUp(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
+	RatePostDown(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
 	UpdatePost(ctx context.Context, in *Post, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
 	DeletePost(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
 	CreateComment(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error)
 	GetComment(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (*Comment, error)
 	GetCommentsFromPost(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Comment], error)
-	RateComment(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
+	RateCommentUp(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
+	RateCommentDown(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
 	UpdateComment(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
 	DeleteComment(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
 }
@@ -459,10 +465,39 @@ func (c *lenicClient) GetUserPublicPosts(ctx context.Context, in *wrapperspb.Str
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserPublicPostsClient = grpc.ServerStreamingClient[Post]
 
-func (c *lenicClient) RatePost(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) GetFeed(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[7], Lenic_GetFeed_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[wrapperspb.StringValue, Post]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Lenic_GetFeedClient = grpc.ServerStreamingClient[Post]
+
+func (c *lenicClient) RatePostUp(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(wrapperspb.StringValue)
-	err := c.cc.Invoke(ctx, Lenic_RatePost_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Lenic_RatePostUp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *lenicClient) RatePostDown(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(wrapperspb.StringValue)
+	err := c.cc.Invoke(ctx, Lenic_RatePostDown_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -511,7 +546,7 @@ func (c *lenicClient) GetComment(ctx context.Context, in *wrapperspb.Int32Value,
 
 func (c *lenicClient) GetCommentsFromPost(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Comment], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[7], Lenic_GetCommentsFromPost_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[8], Lenic_GetCommentsFromPost_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -528,10 +563,20 @@ func (c *lenicClient) GetCommentsFromPost(ctx context.Context, in *wrapperspb.St
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetCommentsFromPostClient = grpc.ServerStreamingClient[Comment]
 
-func (c *lenicClient) RateComment(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) RateCommentUp(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(wrapperspb.StringValue)
-	err := c.cc.Invoke(ctx, Lenic_RateComment_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Lenic_RateCommentUp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *lenicClient) RateCommentDown(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(wrapperspb.StringValue)
+	err := c.cc.Invoke(ctx, Lenic_RateCommentDown_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -582,13 +627,16 @@ type LenicServer interface {
 	GetPost(context.Context, *wrapperspb.StringValue) (*Post, error)
 	GetUserPosts(*wrapperspb.StringValue, grpc.ServerStreamingServer[Post]) error
 	GetUserPublicPosts(*wrapperspb.StringValue, grpc.ServerStreamingServer[Post]) error
-	RatePost(context.Context, *PostRating) (*wrapperspb.StringValue, error)
+	GetFeed(*wrapperspb.StringValue, grpc.ServerStreamingServer[Post]) error
+	RatePostUp(context.Context, *PostRating) (*wrapperspb.StringValue, error)
+	RatePostDown(context.Context, *PostRating) (*wrapperspb.StringValue, error)
 	UpdatePost(context.Context, *Post) (*wrapperspb.StringValue, error)
 	DeletePost(context.Context, *wrapperspb.StringValue) (*wrapperspb.StringValue, error)
 	CreateComment(context.Context, *Comment) (*wrapperspb.Int32Value, error)
 	GetComment(context.Context, *wrapperspb.Int32Value) (*Comment, error)
 	GetCommentsFromPost(*wrapperspb.StringValue, grpc.ServerStreamingServer[Comment]) error
-	RateComment(context.Context, *CommentRating) (*wrapperspb.StringValue, error)
+	RateCommentUp(context.Context, *CommentRating) (*wrapperspb.StringValue, error)
+	RateCommentDown(context.Context, *CommentRating) (*wrapperspb.StringValue, error)
 	UpdateComment(context.Context, *Comment) (*wrapperspb.StringValue, error)
 	DeleteComment(context.Context, *wrapperspb.Int32Value) (*wrapperspb.StringValue, error)
 	mustEmbedUnimplementedLenicServer()
@@ -661,8 +709,14 @@ func (UnimplementedLenicServer) GetUserPosts(*wrapperspb.StringValue, grpc.Serve
 func (UnimplementedLenicServer) GetUserPublicPosts(*wrapperspb.StringValue, grpc.ServerStreamingServer[Post]) error {
 	return status.Errorf(codes.Unimplemented, "method GetUserPublicPosts not implemented")
 }
-func (UnimplementedLenicServer) RatePost(context.Context, *PostRating) (*wrapperspb.StringValue, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RatePost not implemented")
+func (UnimplementedLenicServer) GetFeed(*wrapperspb.StringValue, grpc.ServerStreamingServer[Post]) error {
+	return status.Errorf(codes.Unimplemented, "method GetFeed not implemented")
+}
+func (UnimplementedLenicServer) RatePostUp(context.Context, *PostRating) (*wrapperspb.StringValue, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RatePostUp not implemented")
+}
+func (UnimplementedLenicServer) RatePostDown(context.Context, *PostRating) (*wrapperspb.StringValue, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RatePostDown not implemented")
 }
 func (UnimplementedLenicServer) UpdatePost(context.Context, *Post) (*wrapperspb.StringValue, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePost not implemented")
@@ -679,8 +733,11 @@ func (UnimplementedLenicServer) GetComment(context.Context, *wrapperspb.Int32Val
 func (UnimplementedLenicServer) GetCommentsFromPost(*wrapperspb.StringValue, grpc.ServerStreamingServer[Comment]) error {
 	return status.Errorf(codes.Unimplemented, "method GetCommentsFromPost not implemented")
 }
-func (UnimplementedLenicServer) RateComment(context.Context, *CommentRating) (*wrapperspb.StringValue, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RateComment not implemented")
+func (UnimplementedLenicServer) RateCommentUp(context.Context, *CommentRating) (*wrapperspb.StringValue, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RateCommentUp not implemented")
+}
+func (UnimplementedLenicServer) RateCommentDown(context.Context, *CommentRating) (*wrapperspb.StringValue, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RateCommentDown not implemented")
 }
 func (UnimplementedLenicServer) UpdateComment(context.Context, *Comment) (*wrapperspb.StringValue, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateComment not implemented")
@@ -1020,20 +1077,49 @@ func _Lenic_GetUserPublicPosts_Handler(srv interface{}, stream grpc.ServerStream
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserPublicPostsServer = grpc.ServerStreamingServer[Post]
 
-func _Lenic_RatePost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Lenic_GetFeed_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(wrapperspb.StringValue)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(LenicServer).GetFeed(m, &grpc.GenericServerStream[wrapperspb.StringValue, Post]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Lenic_GetFeedServer = grpc.ServerStreamingServer[Post]
+
+func _Lenic_RatePostUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PostRating)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LenicServer).RatePost(ctx, in)
+		return srv.(LenicServer).RatePostUp(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Lenic_RatePost_FullMethodName,
+		FullMethod: Lenic_RatePostUp_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).RatePost(ctx, req.(*PostRating))
+		return srv.(LenicServer).RatePostUp(ctx, req.(*PostRating))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Lenic_RatePostDown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostRating)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LenicServer).RatePostDown(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Lenic_RatePostDown_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LenicServer).RatePostDown(ctx, req.(*PostRating))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1121,20 +1207,38 @@ func _Lenic_GetCommentsFromPost_Handler(srv interface{}, stream grpc.ServerStrea
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetCommentsFromPostServer = grpc.ServerStreamingServer[Comment]
 
-func _Lenic_RateComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Lenic_RateCommentUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CommentRating)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LenicServer).RateComment(ctx, in)
+		return srv.(LenicServer).RateCommentUp(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Lenic_RateComment_FullMethodName,
+		FullMethod: Lenic_RateCommentUp_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).RateComment(ctx, req.(*CommentRating))
+		return srv.(LenicServer).RateCommentUp(ctx, req.(*CommentRating))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Lenic_RateCommentDown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CommentRating)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LenicServer).RateCommentDown(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Lenic_RateCommentDown_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LenicServer).RateCommentDown(ctx, req.(*CommentRating))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1235,8 +1339,12 @@ var Lenic_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Lenic_GetPost_Handler,
 		},
 		{
-			MethodName: "RatePost",
-			Handler:    _Lenic_RatePost_Handler,
+			MethodName: "RatePostUp",
+			Handler:    _Lenic_RatePostUp_Handler,
+		},
+		{
+			MethodName: "RatePostDown",
+			Handler:    _Lenic_RatePostDown_Handler,
 		},
 		{
 			MethodName: "UpdatePost",
@@ -1255,8 +1363,12 @@ var Lenic_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Lenic_GetComment_Handler,
 		},
 		{
-			MethodName: "RateComment",
-			Handler:    _Lenic_RateComment_Handler,
+			MethodName: "RateCommentUp",
+			Handler:    _Lenic_RateCommentUp_Handler,
+		},
+		{
+			MethodName: "RateCommentDown",
+			Handler:    _Lenic_RateCommentDown_Handler,
 		},
 		{
 			MethodName: "UpdateComment",
@@ -1301,6 +1413,11 @@ var Lenic_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "GetUserPublicPosts",
 			Handler:       _Lenic_GetUserPublicPosts_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetFeed",
+			Handler:       _Lenic_GetFeed_Handler,
 			ServerStreams: true,
 		},
 		{

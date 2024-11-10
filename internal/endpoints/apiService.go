@@ -255,7 +255,7 @@ func (s *ApiService) GetUserConversations(in *wrapperspb.StringValue, stream pb.
 
 	convos, err := orm.Da.GetConversationsByUserId(u.Id)
 	if err != nil {
-		fmt.Errorf("could not get user convos: %v", err)
+		return fmt.Errorf("could not get user convos: %v", err)
 	}
 
 	for _, c := range convos {
