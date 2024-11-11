@@ -11,13 +11,114 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
 // Requires gRPC-Go v1.64.0 or later.
 const _ = grpc.SupportPackageIsVersion9
+
+const (
+	CreateUserService_CreateUser_FullMethodName = "/lenic.CreateUserService/CreateUser"
+)
+
+// CreateUserServiceClient is the client API for CreateUserService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type CreateUserServiceClient interface {
+	CreateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*CreateUserResponse, error)
+}
+
+type createUserServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewCreateUserServiceClient(cc grpc.ClientConnInterface) CreateUserServiceClient {
+	return &createUserServiceClient{cc}
+}
+
+func (c *createUserServiceClient) CreateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*CreateUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateUserResponse)
+	err := c.cc.Invoke(ctx, CreateUserService_CreateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CreateUserServiceServer is the server API for CreateUserService service.
+// All implementations must embed UnimplementedCreateUserServiceServer
+// for forward compatibility.
+type CreateUserServiceServer interface {
+	CreateUser(context.Context, *User) (*CreateUserResponse, error)
+	mustEmbedUnimplementedCreateUserServiceServer()
+}
+
+// UnimplementedCreateUserServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedCreateUserServiceServer struct{}
+
+func (UnimplementedCreateUserServiceServer) CreateUser(context.Context, *User) (*CreateUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
+}
+func (UnimplementedCreateUserServiceServer) mustEmbedUnimplementedCreateUserServiceServer() {}
+func (UnimplementedCreateUserServiceServer) testEmbeddedByValue()                           {}
+
+// UnsafeCreateUserServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CreateUserServiceServer will
+// result in compilation errors.
+type UnsafeCreateUserServiceServer interface {
+	mustEmbedUnimplementedCreateUserServiceServer()
+}
+
+func RegisterCreateUserServiceServer(s grpc.ServiceRegistrar, srv CreateUserServiceServer) {
+	// If the following call pancis, it indicates UnimplementedCreateUserServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&CreateUserService_ServiceDesc, srv)
+}
+
+func _CreateUserService_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(User)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CreateUserServiceServer).CreateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CreateUserService_CreateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CreateUserServiceServer).CreateUser(ctx, req.(*User))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CreateUserService_ServiceDesc is the grpc.ServiceDesc for CreateUserService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var CreateUserService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "lenic.CreateUserService",
+	HandlerType: (*CreateUserServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateUser",
+			Handler:    _CreateUserService_CreateUser_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "lenic.proto",
+}
 
 const (
 	AuthService_Login_FullMethodName = "/lenic.AuthService/Login"
@@ -122,7 +223,6 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	Lenic_CreateUser_FullMethodName           = "/lenic.Lenic/CreateUser"
 	Lenic_ActivateUser_FullMethodName         = "/lenic.Lenic/ActivateUser"
 	Lenic_GetUser_FullMethodName              = "/lenic.Lenic/GetUser"
 	Lenic_SearchUsers_FullMethodName          = "/lenic.Lenic/SearchUsers"
@@ -160,38 +260,37 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LenicClient interface {
-	CreateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error)
-	ActivateUser(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	GetUser(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*User, error)
-	SearchUsers(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
-	GetUserFollowers(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
-	GetUserFollowing(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
-	FollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	AcceptFollow(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	UnfollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	UpdateUserPass(ctx context.Context, in *User, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	DeleteUser(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	StartConversation(ctx context.Context, in *Conversation, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error)
-	GetUserConversations(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Conversation], error)
-	ReadConversation(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	SendDM(ctx context.Context, in *DM, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error)
-	GetConversationDMs(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DM], error)
-	CreatePost(ctx context.Context, in *Post, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	GetPost(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*Post, error)
-	GetUserPosts(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error)
-	GetUserPublicPosts(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error)
-	GetFeed(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error)
-	RatePostUp(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	RatePostDown(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	UpdatePost(ctx context.Context, in *Post, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	DeletePost(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	CreateComment(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error)
-	GetComment(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (*Comment, error)
-	GetCommentsFromPost(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Comment], error)
-	RateCommentUp(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	RateCommentDown(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	UpdateComment(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
-	DeleteComment(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
+	ActivateUser(ctx context.Context, in *ActivateUserRequest, opts ...grpc.CallOption) (*ActivateUserResponse, error)
+	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
+	SearchUsers(ctx context.Context, in *SearchUsersRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
+	GetUserFollowers(ctx context.Context, in *GetUserFollowersRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
+	GetUserFollowing(ctx context.Context, in *GetUserFollowingRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
+	FollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*FollowUserResponse, error)
+	AcceptFollow(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*AcceptFollowResponse, error)
+	UnfollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*UnfollowUserResponse, error)
+	UpdateUserPass(ctx context.Context, in *User, opts ...grpc.CallOption) (*UpdateUserPassResponse, error)
+	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
+	StartConversation(ctx context.Context, in *Conversation, opts ...grpc.CallOption) (*StartConversationResponse, error)
+	GetUserConversations(ctx context.Context, in *GetUserConversationsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Conversation], error)
+	ReadConversation(ctx context.Context, in *ReadConversationRequest, opts ...grpc.CallOption) (*ReadConversationResponse, error)
+	SendDM(ctx context.Context, in *DM, opts ...grpc.CallOption) (*SendDMResponse, error)
+	GetConversationDMs(ctx context.Context, in *GetConversationDMsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DM], error)
+	CreatePost(ctx context.Context, in *Post, opts ...grpc.CallOption) (*CreatePostResponse, error)
+	GetPost(ctx context.Context, in *GetPostRequest, opts ...grpc.CallOption) (*Post, error)
+	GetUserPosts(ctx context.Context, in *GetUserPostsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error)
+	GetUserPublicPosts(ctx context.Context, in *GetUserPublicPostsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error)
+	GetFeed(ctx context.Context, in *GetFeedRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error)
+	RatePostUp(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*RatePostUpResponse, error)
+	RatePostDown(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*RatePostDownResponse, error)
+	UpdatePost(ctx context.Context, in *Post, opts ...grpc.CallOption) (*UpdatePostResponse, error)
+	DeletePost(ctx context.Context, in *DeletePostRequest, opts ...grpc.CallOption) (*DeletePostResponse, error)
+	CreateComment(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*CreateCommentResponse, error)
+	GetComment(ctx context.Context, in *GetCommentRequest, opts ...grpc.CallOption) (*Comment, error)
+	GetCommentsFromPost(ctx context.Context, in *GetCommentsFromPostRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Comment], error)
+	RateCommentUp(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*RateCommentUpResponse, error)
+	RateCommentDown(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*RateCommentDownResponse, error)
+	UpdateComment(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*UpdateCommentResponse, error)
+	DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*DeleteCommentResponse, error)
 }
 
 type lenicClient struct {
@@ -202,19 +301,9 @@ func NewLenicClient(cc grpc.ClientConnInterface) LenicClient {
 	return &lenicClient{cc}
 }
 
-func (c *lenicClient) CreateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error) {
+func (c *lenicClient) ActivateUser(ctx context.Context, in *ActivateUserRequest, opts ...grpc.CallOption) (*ActivateUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.Int32Value)
-	err := c.cc.Invoke(ctx, Lenic_CreateUser_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *lenicClient) ActivateUser(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(ActivateUserResponse)
 	err := c.cc.Invoke(ctx, Lenic_ActivateUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -222,7 +311,7 @@ func (c *lenicClient) ActivateUser(ctx context.Context, in *wrapperspb.StringVal
 	return out, nil
 }
 
-func (c *lenicClient) GetUser(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*User, error) {
+func (c *lenicClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(User)
 	err := c.cc.Invoke(ctx, Lenic_GetUser_FullMethodName, in, out, cOpts...)
@@ -232,13 +321,13 @@ func (c *lenicClient) GetUser(ctx context.Context, in *wrapperspb.StringValue, o
 	return out, nil
 }
 
-func (c *lenicClient) SearchUsers(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error) {
+func (c *lenicClient) SearchUsers(ctx context.Context, in *SearchUsersRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[0], Lenic_SearchUsers_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[wrapperspb.StringValue, User]{ClientStream: stream}
+	x := &grpc.GenericClientStream[SearchUsersRequest, User]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -251,13 +340,13 @@ func (c *lenicClient) SearchUsers(ctx context.Context, in *wrapperspb.StringValu
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_SearchUsersClient = grpc.ServerStreamingClient[User]
 
-func (c *lenicClient) GetUserFollowers(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error) {
+func (c *lenicClient) GetUserFollowers(ctx context.Context, in *GetUserFollowersRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[1], Lenic_GetUserFollowers_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[wrapperspb.StringValue, User]{ClientStream: stream}
+	x := &grpc.GenericClientStream[GetUserFollowersRequest, User]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -270,13 +359,13 @@ func (c *lenicClient) GetUserFollowers(ctx context.Context, in *wrapperspb.Strin
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserFollowersClient = grpc.ServerStreamingClient[User]
 
-func (c *lenicClient) GetUserFollowing(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error) {
+func (c *lenicClient) GetUserFollowing(ctx context.Context, in *GetUserFollowingRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[2], Lenic_GetUserFollowing_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[wrapperspb.StringValue, User]{ClientStream: stream}
+	x := &grpc.GenericClientStream[GetUserFollowingRequest, User]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -289,9 +378,9 @@ func (c *lenicClient) GetUserFollowing(ctx context.Context, in *wrapperspb.Strin
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserFollowingClient = grpc.ServerStreamingClient[User]
 
-func (c *lenicClient) FollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) FollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*FollowUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(FollowUserResponse)
 	err := c.cc.Invoke(ctx, Lenic_FollowUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -299,9 +388,9 @@ func (c *lenicClient) FollowUser(ctx context.Context, in *Follow, opts ...grpc.C
 	return out, nil
 }
 
-func (c *lenicClient) AcceptFollow(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) AcceptFollow(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*AcceptFollowResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(AcceptFollowResponse)
 	err := c.cc.Invoke(ctx, Lenic_AcceptFollow_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -309,9 +398,9 @@ func (c *lenicClient) AcceptFollow(ctx context.Context, in *Follow, opts ...grpc
 	return out, nil
 }
 
-func (c *lenicClient) UnfollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) UnfollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*UnfollowUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(UnfollowUserResponse)
 	err := c.cc.Invoke(ctx, Lenic_UnfollowUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -319,9 +408,9 @@ func (c *lenicClient) UnfollowUser(ctx context.Context, in *Follow, opts ...grpc
 	return out, nil
 }
 
-func (c *lenicClient) UpdateUserPass(ctx context.Context, in *User, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) UpdateUserPass(ctx context.Context, in *User, opts ...grpc.CallOption) (*UpdateUserPassResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(UpdateUserPassResponse)
 	err := c.cc.Invoke(ctx, Lenic_UpdateUserPass_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -329,9 +418,9 @@ func (c *lenicClient) UpdateUserPass(ctx context.Context, in *User, opts ...grpc
 	return out, nil
 }
 
-func (c *lenicClient) DeleteUser(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(DeleteUserResponse)
 	err := c.cc.Invoke(ctx, Lenic_DeleteUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -339,9 +428,9 @@ func (c *lenicClient) DeleteUser(ctx context.Context, in *wrapperspb.StringValue
 	return out, nil
 }
 
-func (c *lenicClient) StartConversation(ctx context.Context, in *Conversation, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error) {
+func (c *lenicClient) StartConversation(ctx context.Context, in *Conversation, opts ...grpc.CallOption) (*StartConversationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.Int32Value)
+	out := new(StartConversationResponse)
 	err := c.cc.Invoke(ctx, Lenic_StartConversation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -349,13 +438,13 @@ func (c *lenicClient) StartConversation(ctx context.Context, in *Conversation, o
 	return out, nil
 }
 
-func (c *lenicClient) GetUserConversations(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Conversation], error) {
+func (c *lenicClient) GetUserConversations(ctx context.Context, in *GetUserConversationsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Conversation], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[3], Lenic_GetUserConversations_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[wrapperspb.StringValue, Conversation]{ClientStream: stream}
+	x := &grpc.GenericClientStream[GetUserConversationsRequest, Conversation]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -368,9 +457,9 @@ func (c *lenicClient) GetUserConversations(ctx context.Context, in *wrapperspb.S
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserConversationsClient = grpc.ServerStreamingClient[Conversation]
 
-func (c *lenicClient) ReadConversation(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) ReadConversation(ctx context.Context, in *ReadConversationRequest, opts ...grpc.CallOption) (*ReadConversationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(ReadConversationResponse)
 	err := c.cc.Invoke(ctx, Lenic_ReadConversation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -378,9 +467,9 @@ func (c *lenicClient) ReadConversation(ctx context.Context, in *wrapperspb.Int32
 	return out, nil
 }
 
-func (c *lenicClient) SendDM(ctx context.Context, in *DM, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error) {
+func (c *lenicClient) SendDM(ctx context.Context, in *DM, opts ...grpc.CallOption) (*SendDMResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.Int32Value)
+	out := new(SendDMResponse)
 	err := c.cc.Invoke(ctx, Lenic_SendDM_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -388,13 +477,13 @@ func (c *lenicClient) SendDM(ctx context.Context, in *DM, opts ...grpc.CallOptio
 	return out, nil
 }
 
-func (c *lenicClient) GetConversationDMs(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DM], error) {
+func (c *lenicClient) GetConversationDMs(ctx context.Context, in *GetConversationDMsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DM], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[4], Lenic_GetConversationDMs_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[wrapperspb.Int32Value, DM]{ClientStream: stream}
+	x := &grpc.GenericClientStream[GetConversationDMsRequest, DM]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -407,9 +496,9 @@ func (c *lenicClient) GetConversationDMs(ctx context.Context, in *wrapperspb.Int
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetConversationDMsClient = grpc.ServerStreamingClient[DM]
 
-func (c *lenicClient) CreatePost(ctx context.Context, in *Post, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) CreatePost(ctx context.Context, in *Post, opts ...grpc.CallOption) (*CreatePostResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(CreatePostResponse)
 	err := c.cc.Invoke(ctx, Lenic_CreatePost_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -417,7 +506,7 @@ func (c *lenicClient) CreatePost(ctx context.Context, in *Post, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *lenicClient) GetPost(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*Post, error) {
+func (c *lenicClient) GetPost(ctx context.Context, in *GetPostRequest, opts ...grpc.CallOption) (*Post, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Post)
 	err := c.cc.Invoke(ctx, Lenic_GetPost_FullMethodName, in, out, cOpts...)
@@ -427,13 +516,13 @@ func (c *lenicClient) GetPost(ctx context.Context, in *wrapperspb.StringValue, o
 	return out, nil
 }
 
-func (c *lenicClient) GetUserPosts(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error) {
+func (c *lenicClient) GetUserPosts(ctx context.Context, in *GetUserPostsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[5], Lenic_GetUserPosts_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[wrapperspb.StringValue, Post]{ClientStream: stream}
+	x := &grpc.GenericClientStream[GetUserPostsRequest, Post]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -446,13 +535,13 @@ func (c *lenicClient) GetUserPosts(ctx context.Context, in *wrapperspb.StringVal
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserPostsClient = grpc.ServerStreamingClient[Post]
 
-func (c *lenicClient) GetUserPublicPosts(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error) {
+func (c *lenicClient) GetUserPublicPosts(ctx context.Context, in *GetUserPublicPostsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[6], Lenic_GetUserPublicPosts_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[wrapperspb.StringValue, Post]{ClientStream: stream}
+	x := &grpc.GenericClientStream[GetUserPublicPostsRequest, Post]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -465,13 +554,13 @@ func (c *lenicClient) GetUserPublicPosts(ctx context.Context, in *wrapperspb.Str
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserPublicPostsClient = grpc.ServerStreamingClient[Post]
 
-func (c *lenicClient) GetFeed(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error) {
+func (c *lenicClient) GetFeed(ctx context.Context, in *GetFeedRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Post], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[7], Lenic_GetFeed_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[wrapperspb.StringValue, Post]{ClientStream: stream}
+	x := &grpc.GenericClientStream[GetFeedRequest, Post]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -484,9 +573,9 @@ func (c *lenicClient) GetFeed(ctx context.Context, in *wrapperspb.StringValue, o
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetFeedClient = grpc.ServerStreamingClient[Post]
 
-func (c *lenicClient) RatePostUp(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) RatePostUp(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*RatePostUpResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(RatePostUpResponse)
 	err := c.cc.Invoke(ctx, Lenic_RatePostUp_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -494,9 +583,9 @@ func (c *lenicClient) RatePostUp(ctx context.Context, in *PostRating, opts ...gr
 	return out, nil
 }
 
-func (c *lenicClient) RatePostDown(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) RatePostDown(ctx context.Context, in *PostRating, opts ...grpc.CallOption) (*RatePostDownResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(RatePostDownResponse)
 	err := c.cc.Invoke(ctx, Lenic_RatePostDown_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -504,9 +593,9 @@ func (c *lenicClient) RatePostDown(ctx context.Context, in *PostRating, opts ...
 	return out, nil
 }
 
-func (c *lenicClient) UpdatePost(ctx context.Context, in *Post, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) UpdatePost(ctx context.Context, in *Post, opts ...grpc.CallOption) (*UpdatePostResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(UpdatePostResponse)
 	err := c.cc.Invoke(ctx, Lenic_UpdatePost_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -514,9 +603,9 @@ func (c *lenicClient) UpdatePost(ctx context.Context, in *Post, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *lenicClient) DeletePost(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) DeletePost(ctx context.Context, in *DeletePostRequest, opts ...grpc.CallOption) (*DeletePostResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(DeletePostResponse)
 	err := c.cc.Invoke(ctx, Lenic_DeletePost_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -524,9 +613,9 @@ func (c *lenicClient) DeletePost(ctx context.Context, in *wrapperspb.StringValue
 	return out, nil
 }
 
-func (c *lenicClient) CreateComment(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*wrapperspb.Int32Value, error) {
+func (c *lenicClient) CreateComment(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*CreateCommentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.Int32Value)
+	out := new(CreateCommentResponse)
 	err := c.cc.Invoke(ctx, Lenic_CreateComment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -534,7 +623,7 @@ func (c *lenicClient) CreateComment(ctx context.Context, in *Comment, opts ...gr
 	return out, nil
 }
 
-func (c *lenicClient) GetComment(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (*Comment, error) {
+func (c *lenicClient) GetComment(ctx context.Context, in *GetCommentRequest, opts ...grpc.CallOption) (*Comment, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Comment)
 	err := c.cc.Invoke(ctx, Lenic_GetComment_FullMethodName, in, out, cOpts...)
@@ -544,13 +633,13 @@ func (c *lenicClient) GetComment(ctx context.Context, in *wrapperspb.Int32Value,
 	return out, nil
 }
 
-func (c *lenicClient) GetCommentsFromPost(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Comment], error) {
+func (c *lenicClient) GetCommentsFromPost(ctx context.Context, in *GetCommentsFromPostRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Comment], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Lenic_ServiceDesc.Streams[8], Lenic_GetCommentsFromPost_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[wrapperspb.StringValue, Comment]{ClientStream: stream}
+	x := &grpc.GenericClientStream[GetCommentsFromPostRequest, Comment]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -563,9 +652,9 @@ func (c *lenicClient) GetCommentsFromPost(ctx context.Context, in *wrapperspb.St
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetCommentsFromPostClient = grpc.ServerStreamingClient[Comment]
 
-func (c *lenicClient) RateCommentUp(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) RateCommentUp(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*RateCommentUpResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(RateCommentUpResponse)
 	err := c.cc.Invoke(ctx, Lenic_RateCommentUp_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -573,9 +662,9 @@ func (c *lenicClient) RateCommentUp(ctx context.Context, in *CommentRating, opts
 	return out, nil
 }
 
-func (c *lenicClient) RateCommentDown(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) RateCommentDown(ctx context.Context, in *CommentRating, opts ...grpc.CallOption) (*RateCommentDownResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(RateCommentDownResponse)
 	err := c.cc.Invoke(ctx, Lenic_RateCommentDown_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -583,9 +672,9 @@ func (c *lenicClient) RateCommentDown(ctx context.Context, in *CommentRating, op
 	return out, nil
 }
 
-func (c *lenicClient) UpdateComment(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) UpdateComment(ctx context.Context, in *Comment, opts ...grpc.CallOption) (*UpdateCommentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(UpdateCommentResponse)
 	err := c.cc.Invoke(ctx, Lenic_UpdateComment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -593,9 +682,9 @@ func (c *lenicClient) UpdateComment(ctx context.Context, in *Comment, opts ...gr
 	return out, nil
 }
 
-func (c *lenicClient) DeleteComment(ctx context.Context, in *wrapperspb.Int32Value, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+func (c *lenicClient) DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*DeleteCommentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(wrapperspb.StringValue)
+	out := new(DeleteCommentResponse)
 	err := c.cc.Invoke(ctx, Lenic_DeleteComment_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -607,38 +696,37 @@ func (c *lenicClient) DeleteComment(ctx context.Context, in *wrapperspb.Int32Val
 // All implementations must embed UnimplementedLenicServer
 // for forward compatibility.
 type LenicServer interface {
-	CreateUser(context.Context, *User) (*wrapperspb.Int32Value, error)
-	ActivateUser(context.Context, *wrapperspb.StringValue) (*wrapperspb.StringValue, error)
-	GetUser(context.Context, *wrapperspb.StringValue) (*User, error)
-	SearchUsers(*wrapperspb.StringValue, grpc.ServerStreamingServer[User]) error
-	GetUserFollowers(*wrapperspb.StringValue, grpc.ServerStreamingServer[User]) error
-	GetUserFollowing(*wrapperspb.StringValue, grpc.ServerStreamingServer[User]) error
-	FollowUser(context.Context, *Follow) (*wrapperspb.StringValue, error)
-	AcceptFollow(context.Context, *Follow) (*wrapperspb.StringValue, error)
-	UnfollowUser(context.Context, *Follow) (*wrapperspb.StringValue, error)
-	UpdateUserPass(context.Context, *User) (*wrapperspb.StringValue, error)
-	DeleteUser(context.Context, *wrapperspb.StringValue) (*wrapperspb.StringValue, error)
-	StartConversation(context.Context, *Conversation) (*wrapperspb.Int32Value, error)
-	GetUserConversations(*wrapperspb.StringValue, grpc.ServerStreamingServer[Conversation]) error
-	ReadConversation(context.Context, *wrapperspb.Int32Value) (*wrapperspb.StringValue, error)
-	SendDM(context.Context, *DM) (*wrapperspb.Int32Value, error)
-	GetConversationDMs(*wrapperspb.Int32Value, grpc.ServerStreamingServer[DM]) error
-	CreatePost(context.Context, *Post) (*wrapperspb.StringValue, error)
-	GetPost(context.Context, *wrapperspb.StringValue) (*Post, error)
-	GetUserPosts(*wrapperspb.StringValue, grpc.ServerStreamingServer[Post]) error
-	GetUserPublicPosts(*wrapperspb.StringValue, grpc.ServerStreamingServer[Post]) error
-	GetFeed(*wrapperspb.StringValue, grpc.ServerStreamingServer[Post]) error
-	RatePostUp(context.Context, *PostRating) (*wrapperspb.StringValue, error)
-	RatePostDown(context.Context, *PostRating) (*wrapperspb.StringValue, error)
-	UpdatePost(context.Context, *Post) (*wrapperspb.StringValue, error)
-	DeletePost(context.Context, *wrapperspb.StringValue) (*wrapperspb.StringValue, error)
-	CreateComment(context.Context, *Comment) (*wrapperspb.Int32Value, error)
-	GetComment(context.Context, *wrapperspb.Int32Value) (*Comment, error)
-	GetCommentsFromPost(*wrapperspb.StringValue, grpc.ServerStreamingServer[Comment]) error
-	RateCommentUp(context.Context, *CommentRating) (*wrapperspb.StringValue, error)
-	RateCommentDown(context.Context, *CommentRating) (*wrapperspb.StringValue, error)
-	UpdateComment(context.Context, *Comment) (*wrapperspb.StringValue, error)
-	DeleteComment(context.Context, *wrapperspb.Int32Value) (*wrapperspb.StringValue, error)
+	ActivateUser(context.Context, *ActivateUserRequest) (*ActivateUserResponse, error)
+	GetUser(context.Context, *GetUserRequest) (*User, error)
+	SearchUsers(*SearchUsersRequest, grpc.ServerStreamingServer[User]) error
+	GetUserFollowers(*GetUserFollowersRequest, grpc.ServerStreamingServer[User]) error
+	GetUserFollowing(*GetUserFollowingRequest, grpc.ServerStreamingServer[User]) error
+	FollowUser(context.Context, *Follow) (*FollowUserResponse, error)
+	AcceptFollow(context.Context, *Follow) (*AcceptFollowResponse, error)
+	UnfollowUser(context.Context, *Follow) (*UnfollowUserResponse, error)
+	UpdateUserPass(context.Context, *User) (*UpdateUserPassResponse, error)
+	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
+	StartConversation(context.Context, *Conversation) (*StartConversationResponse, error)
+	GetUserConversations(*GetUserConversationsRequest, grpc.ServerStreamingServer[Conversation]) error
+	ReadConversation(context.Context, *ReadConversationRequest) (*ReadConversationResponse, error)
+	SendDM(context.Context, *DM) (*SendDMResponse, error)
+	GetConversationDMs(*GetConversationDMsRequest, grpc.ServerStreamingServer[DM]) error
+	CreatePost(context.Context, *Post) (*CreatePostResponse, error)
+	GetPost(context.Context, *GetPostRequest) (*Post, error)
+	GetUserPosts(*GetUserPostsRequest, grpc.ServerStreamingServer[Post]) error
+	GetUserPublicPosts(*GetUserPublicPostsRequest, grpc.ServerStreamingServer[Post]) error
+	GetFeed(*GetFeedRequest, grpc.ServerStreamingServer[Post]) error
+	RatePostUp(context.Context, *PostRating) (*RatePostUpResponse, error)
+	RatePostDown(context.Context, *PostRating) (*RatePostDownResponse, error)
+	UpdatePost(context.Context, *Post) (*UpdatePostResponse, error)
+	DeletePost(context.Context, *DeletePostRequest) (*DeletePostResponse, error)
+	CreateComment(context.Context, *Comment) (*CreateCommentResponse, error)
+	GetComment(context.Context, *GetCommentRequest) (*Comment, error)
+	GetCommentsFromPost(*GetCommentsFromPostRequest, grpc.ServerStreamingServer[Comment]) error
+	RateCommentUp(context.Context, *CommentRating) (*RateCommentUpResponse, error)
+	RateCommentDown(context.Context, *CommentRating) (*RateCommentDownResponse, error)
+	UpdateComment(context.Context, *Comment) (*UpdateCommentResponse, error)
+	DeleteComment(context.Context, *DeleteCommentRequest) (*DeleteCommentResponse, error)
 	mustEmbedUnimplementedLenicServer()
 }
 
@@ -649,100 +737,97 @@ type LenicServer interface {
 // pointer dereference when methods are called.
 type UnimplementedLenicServer struct{}
 
-func (UnimplementedLenicServer) CreateUser(context.Context, *User) (*wrapperspb.Int32Value, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
-}
-func (UnimplementedLenicServer) ActivateUser(context.Context, *wrapperspb.StringValue) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) ActivateUser(context.Context, *ActivateUserRequest) (*ActivateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ActivateUser not implemented")
 }
-func (UnimplementedLenicServer) GetUser(context.Context, *wrapperspb.StringValue) (*User, error) {
+func (UnimplementedLenicServer) GetUser(context.Context, *GetUserRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
 }
-func (UnimplementedLenicServer) SearchUsers(*wrapperspb.StringValue, grpc.ServerStreamingServer[User]) error {
+func (UnimplementedLenicServer) SearchUsers(*SearchUsersRequest, grpc.ServerStreamingServer[User]) error {
 	return status.Errorf(codes.Unimplemented, "method SearchUsers not implemented")
 }
-func (UnimplementedLenicServer) GetUserFollowers(*wrapperspb.StringValue, grpc.ServerStreamingServer[User]) error {
+func (UnimplementedLenicServer) GetUserFollowers(*GetUserFollowersRequest, grpc.ServerStreamingServer[User]) error {
 	return status.Errorf(codes.Unimplemented, "method GetUserFollowers not implemented")
 }
-func (UnimplementedLenicServer) GetUserFollowing(*wrapperspb.StringValue, grpc.ServerStreamingServer[User]) error {
+func (UnimplementedLenicServer) GetUserFollowing(*GetUserFollowingRequest, grpc.ServerStreamingServer[User]) error {
 	return status.Errorf(codes.Unimplemented, "method GetUserFollowing not implemented")
 }
-func (UnimplementedLenicServer) FollowUser(context.Context, *Follow) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) FollowUser(context.Context, *Follow) (*FollowUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FollowUser not implemented")
 }
-func (UnimplementedLenicServer) AcceptFollow(context.Context, *Follow) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) AcceptFollow(context.Context, *Follow) (*AcceptFollowResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AcceptFollow not implemented")
 }
-func (UnimplementedLenicServer) UnfollowUser(context.Context, *Follow) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) UnfollowUser(context.Context, *Follow) (*UnfollowUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnfollowUser not implemented")
 }
-func (UnimplementedLenicServer) UpdateUserPass(context.Context, *User) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) UpdateUserPass(context.Context, *User) (*UpdateUserPassResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserPass not implemented")
 }
-func (UnimplementedLenicServer) DeleteUser(context.Context, *wrapperspb.StringValue) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
-func (UnimplementedLenicServer) StartConversation(context.Context, *Conversation) (*wrapperspb.Int32Value, error) {
+func (UnimplementedLenicServer) StartConversation(context.Context, *Conversation) (*StartConversationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartConversation not implemented")
 }
-func (UnimplementedLenicServer) GetUserConversations(*wrapperspb.StringValue, grpc.ServerStreamingServer[Conversation]) error {
+func (UnimplementedLenicServer) GetUserConversations(*GetUserConversationsRequest, grpc.ServerStreamingServer[Conversation]) error {
 	return status.Errorf(codes.Unimplemented, "method GetUserConversations not implemented")
 }
-func (UnimplementedLenicServer) ReadConversation(context.Context, *wrapperspb.Int32Value) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) ReadConversation(context.Context, *ReadConversationRequest) (*ReadConversationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadConversation not implemented")
 }
-func (UnimplementedLenicServer) SendDM(context.Context, *DM) (*wrapperspb.Int32Value, error) {
+func (UnimplementedLenicServer) SendDM(context.Context, *DM) (*SendDMResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendDM not implemented")
 }
-func (UnimplementedLenicServer) GetConversationDMs(*wrapperspb.Int32Value, grpc.ServerStreamingServer[DM]) error {
+func (UnimplementedLenicServer) GetConversationDMs(*GetConversationDMsRequest, grpc.ServerStreamingServer[DM]) error {
 	return status.Errorf(codes.Unimplemented, "method GetConversationDMs not implemented")
 }
-func (UnimplementedLenicServer) CreatePost(context.Context, *Post) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) CreatePost(context.Context, *Post) (*CreatePostResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePost not implemented")
 }
-func (UnimplementedLenicServer) GetPost(context.Context, *wrapperspb.StringValue) (*Post, error) {
+func (UnimplementedLenicServer) GetPost(context.Context, *GetPostRequest) (*Post, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPost not implemented")
 }
-func (UnimplementedLenicServer) GetUserPosts(*wrapperspb.StringValue, grpc.ServerStreamingServer[Post]) error {
+func (UnimplementedLenicServer) GetUserPosts(*GetUserPostsRequest, grpc.ServerStreamingServer[Post]) error {
 	return status.Errorf(codes.Unimplemented, "method GetUserPosts not implemented")
 }
-func (UnimplementedLenicServer) GetUserPublicPosts(*wrapperspb.StringValue, grpc.ServerStreamingServer[Post]) error {
+func (UnimplementedLenicServer) GetUserPublicPosts(*GetUserPublicPostsRequest, grpc.ServerStreamingServer[Post]) error {
 	return status.Errorf(codes.Unimplemented, "method GetUserPublicPosts not implemented")
 }
-func (UnimplementedLenicServer) GetFeed(*wrapperspb.StringValue, grpc.ServerStreamingServer[Post]) error {
+func (UnimplementedLenicServer) GetFeed(*GetFeedRequest, grpc.ServerStreamingServer[Post]) error {
 	return status.Errorf(codes.Unimplemented, "method GetFeed not implemented")
 }
-func (UnimplementedLenicServer) RatePostUp(context.Context, *PostRating) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) RatePostUp(context.Context, *PostRating) (*RatePostUpResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RatePostUp not implemented")
 }
-func (UnimplementedLenicServer) RatePostDown(context.Context, *PostRating) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) RatePostDown(context.Context, *PostRating) (*RatePostDownResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RatePostDown not implemented")
 }
-func (UnimplementedLenicServer) UpdatePost(context.Context, *Post) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) UpdatePost(context.Context, *Post) (*UpdatePostResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePost not implemented")
 }
-func (UnimplementedLenicServer) DeletePost(context.Context, *wrapperspb.StringValue) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) DeletePost(context.Context, *DeletePostRequest) (*DeletePostResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeletePost not implemented")
 }
-func (UnimplementedLenicServer) CreateComment(context.Context, *Comment) (*wrapperspb.Int32Value, error) {
+func (UnimplementedLenicServer) CreateComment(context.Context, *Comment) (*CreateCommentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateComment not implemented")
 }
-func (UnimplementedLenicServer) GetComment(context.Context, *wrapperspb.Int32Value) (*Comment, error) {
+func (UnimplementedLenicServer) GetComment(context.Context, *GetCommentRequest) (*Comment, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetComment not implemented")
 }
-func (UnimplementedLenicServer) GetCommentsFromPost(*wrapperspb.StringValue, grpc.ServerStreamingServer[Comment]) error {
+func (UnimplementedLenicServer) GetCommentsFromPost(*GetCommentsFromPostRequest, grpc.ServerStreamingServer[Comment]) error {
 	return status.Errorf(codes.Unimplemented, "method GetCommentsFromPost not implemented")
 }
-func (UnimplementedLenicServer) RateCommentUp(context.Context, *CommentRating) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) RateCommentUp(context.Context, *CommentRating) (*RateCommentUpResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RateCommentUp not implemented")
 }
-func (UnimplementedLenicServer) RateCommentDown(context.Context, *CommentRating) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) RateCommentDown(context.Context, *CommentRating) (*RateCommentDownResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RateCommentDown not implemented")
 }
-func (UnimplementedLenicServer) UpdateComment(context.Context, *Comment) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) UpdateComment(context.Context, *Comment) (*UpdateCommentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateComment not implemented")
 }
-func (UnimplementedLenicServer) DeleteComment(context.Context, *wrapperspb.Int32Value) (*wrapperspb.StringValue, error) {
+func (UnimplementedLenicServer) DeleteComment(context.Context, *DeleteCommentRequest) (*DeleteCommentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteComment not implemented")
 }
 func (UnimplementedLenicServer) mustEmbedUnimplementedLenicServer() {}
@@ -766,26 +851,8 @@ func RegisterLenicServer(s grpc.ServiceRegistrar, srv LenicServer) {
 	s.RegisterService(&Lenic_ServiceDesc, srv)
 }
 
-func _Lenic_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(User)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LenicServer).CreateUser(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Lenic_CreateUser_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).CreateUser(ctx, req.(*User))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Lenic_ActivateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(wrapperspb.StringValue)
+	in := new(ActivateUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -797,13 +864,13 @@ func _Lenic_ActivateUser_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: Lenic_ActivateUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).ActivateUser(ctx, req.(*wrapperspb.StringValue))
+		return srv.(LenicServer).ActivateUser(ctx, req.(*ActivateUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Lenic_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(wrapperspb.StringValue)
+	in := new(GetUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -815,39 +882,39 @@ func _Lenic_GetUser_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: Lenic_GetUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).GetUser(ctx, req.(*wrapperspb.StringValue))
+		return srv.(LenicServer).GetUser(ctx, req.(*GetUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Lenic_SearchUsers_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(wrapperspb.StringValue)
+	m := new(SearchUsersRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LenicServer).SearchUsers(m, &grpc.GenericServerStream[wrapperspb.StringValue, User]{ServerStream: stream})
+	return srv.(LenicServer).SearchUsers(m, &grpc.GenericServerStream[SearchUsersRequest, User]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_SearchUsersServer = grpc.ServerStreamingServer[User]
 
 func _Lenic_GetUserFollowers_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(wrapperspb.StringValue)
+	m := new(GetUserFollowersRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LenicServer).GetUserFollowers(m, &grpc.GenericServerStream[wrapperspb.StringValue, User]{ServerStream: stream})
+	return srv.(LenicServer).GetUserFollowers(m, &grpc.GenericServerStream[GetUserFollowersRequest, User]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserFollowersServer = grpc.ServerStreamingServer[User]
 
 func _Lenic_GetUserFollowing_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(wrapperspb.StringValue)
+	m := new(GetUserFollowingRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LenicServer).GetUserFollowing(m, &grpc.GenericServerStream[wrapperspb.StringValue, User]{ServerStream: stream})
+	return srv.(LenicServer).GetUserFollowing(m, &grpc.GenericServerStream[GetUserFollowingRequest, User]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
@@ -926,7 +993,7 @@ func _Lenic_UpdateUserPass_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 func _Lenic_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(wrapperspb.StringValue)
+	in := new(DeleteUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -938,7 +1005,7 @@ func _Lenic_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: Lenic_DeleteUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).DeleteUser(ctx, req.(*wrapperspb.StringValue))
+		return srv.(LenicServer).DeleteUser(ctx, req.(*DeleteUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -962,18 +1029,18 @@ func _Lenic_StartConversation_Handler(srv interface{}, ctx context.Context, dec 
 }
 
 func _Lenic_GetUserConversations_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(wrapperspb.StringValue)
+	m := new(GetUserConversationsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LenicServer).GetUserConversations(m, &grpc.GenericServerStream[wrapperspb.StringValue, Conversation]{ServerStream: stream})
+	return srv.(LenicServer).GetUserConversations(m, &grpc.GenericServerStream[GetUserConversationsRequest, Conversation]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserConversationsServer = grpc.ServerStreamingServer[Conversation]
 
 func _Lenic_ReadConversation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(wrapperspb.Int32Value)
+	in := new(ReadConversationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -985,7 +1052,7 @@ func _Lenic_ReadConversation_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: Lenic_ReadConversation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).ReadConversation(ctx, req.(*wrapperspb.Int32Value))
+		return srv.(LenicServer).ReadConversation(ctx, req.(*ReadConversationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1009,11 +1076,11 @@ func _Lenic_SendDM_Handler(srv interface{}, ctx context.Context, dec func(interf
 }
 
 func _Lenic_GetConversationDMs_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(wrapperspb.Int32Value)
+	m := new(GetConversationDMsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LenicServer).GetConversationDMs(m, &grpc.GenericServerStream[wrapperspb.Int32Value, DM]{ServerStream: stream})
+	return srv.(LenicServer).GetConversationDMs(m, &grpc.GenericServerStream[GetConversationDMsRequest, DM]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
@@ -1038,7 +1105,7 @@ func _Lenic_CreatePost_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Lenic_GetPost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(wrapperspb.StringValue)
+	in := new(GetPostRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1050,39 +1117,39 @@ func _Lenic_GetPost_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: Lenic_GetPost_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).GetPost(ctx, req.(*wrapperspb.StringValue))
+		return srv.(LenicServer).GetPost(ctx, req.(*GetPostRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Lenic_GetUserPosts_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(wrapperspb.StringValue)
+	m := new(GetUserPostsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LenicServer).GetUserPosts(m, &grpc.GenericServerStream[wrapperspb.StringValue, Post]{ServerStream: stream})
+	return srv.(LenicServer).GetUserPosts(m, &grpc.GenericServerStream[GetUserPostsRequest, Post]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserPostsServer = grpc.ServerStreamingServer[Post]
 
 func _Lenic_GetUserPublicPosts_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(wrapperspb.StringValue)
+	m := new(GetUserPublicPostsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LenicServer).GetUserPublicPosts(m, &grpc.GenericServerStream[wrapperspb.StringValue, Post]{ServerStream: stream})
+	return srv.(LenicServer).GetUserPublicPosts(m, &grpc.GenericServerStream[GetUserPublicPostsRequest, Post]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserPublicPostsServer = grpc.ServerStreamingServer[Post]
 
 func _Lenic_GetFeed_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(wrapperspb.StringValue)
+	m := new(GetFeedRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LenicServer).GetFeed(m, &grpc.GenericServerStream[wrapperspb.StringValue, Post]{ServerStream: stream})
+	return srv.(LenicServer).GetFeed(m, &grpc.GenericServerStream[GetFeedRequest, Post]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
@@ -1143,7 +1210,7 @@ func _Lenic_UpdatePost_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Lenic_DeletePost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(wrapperspb.StringValue)
+	in := new(DeletePostRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1155,7 +1222,7 @@ func _Lenic_DeletePost_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: Lenic_DeletePost_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).DeletePost(ctx, req.(*wrapperspb.StringValue))
+		return srv.(LenicServer).DeletePost(ctx, req.(*DeletePostRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1179,7 +1246,7 @@ func _Lenic_CreateComment_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 func _Lenic_GetComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(wrapperspb.Int32Value)
+	in := new(GetCommentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1191,17 +1258,17 @@ func _Lenic_GetComment_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: Lenic_GetComment_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).GetComment(ctx, req.(*wrapperspb.Int32Value))
+		return srv.(LenicServer).GetComment(ctx, req.(*GetCommentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Lenic_GetCommentsFromPost_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(wrapperspb.StringValue)
+	m := new(GetCommentsFromPostRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LenicServer).GetCommentsFromPost(m, &grpc.GenericServerStream[wrapperspb.StringValue, Comment]{ServerStream: stream})
+	return srv.(LenicServer).GetCommentsFromPost(m, &grpc.GenericServerStream[GetCommentsFromPostRequest, Comment]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
@@ -1262,7 +1329,7 @@ func _Lenic_UpdateComment_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 func _Lenic_DeleteComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(wrapperspb.Int32Value)
+	in := new(DeleteCommentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1274,7 +1341,7 @@ func _Lenic_DeleteComment_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: Lenic_DeleteComment_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).DeleteComment(ctx, req.(*wrapperspb.Int32Value))
+		return srv.(LenicServer).DeleteComment(ctx, req.(*DeleteCommentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1286,10 +1353,6 @@ var Lenic_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "lenic.Lenic",
 	HandlerType: (*LenicServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "CreateUser",
-			Handler:    _Lenic_CreateUser_Handler,
-		},
 		{
 			MethodName: "ActivateUser",
 			Handler:    _Lenic_ActivateUser_Handler,

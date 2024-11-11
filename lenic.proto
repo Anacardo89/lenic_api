@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/wrappers.proto";
-
 package lenic;
 option go_package = "github.com/anacardo89/lenic_api/internal/pb";
 
@@ -137,19 +135,19 @@ message CreatePostResponse {
 }
 
 message GetPostRequest {
-  uuid = 1;
+  string uuid = 1;
 }
 
 message GetUserPostsRequest {
-  username = 1;
+  string username = 1;
 }
 
 message GetUserPublicPostsRequest {
-  username = 1;
+  string username = 1;
 }
 
 message GetFeedRequest {
-  username = 1;
+  string username = 1;
 }
 
 message RatePostUpResponse {
