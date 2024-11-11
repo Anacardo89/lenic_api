@@ -14,7 +14,7 @@ import (
 )
 
 type CreateUserService struct {
-	pb.UnimplementedCreateUSerServiceServer
+	pb.UnimplementedCreateUserServiceServer
 }
 
 func (s *CreateUserService) CreateUser(ctx context.Context, in *pb.User) (*wrapperspb.Int32Value, error) {

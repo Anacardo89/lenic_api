@@ -8,7 +8,6 @@ import (
 	"github.com/Anacardo89/lenic_api/internal/data/orm"
 	"github.com/Anacardo89/lenic_api/internal/pb"
 	"github.com/google/uuid"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 var (
@@ -19,16 +18,19 @@ type ApiService struct {
 	pb.UnimplementedLenicServer
 }
 
-func (s *ApiService) ActivateUser(ctx context.Context, in *wrapperspb.StringValue) (*wrapperspb.StringValue, error) {
-	err := orm.Da.SetUserAsActive(in.Value)
+func (s *ApiService) ActivateUser(ctx context.Context, in *pb.ActivateUserRequest) (*pb.ActivateUserResponse, error) {
+	err := orm.Da.SetUserAsActive(in.Username)
 	if err != nil {
 		return nil, fmt.Errorf("could not activate user: %v", err)
 	}
-	return in, nil
+	res := &pb.ActivateUserResponse{
+		Response: in.Username,
+	}
+	return res, nil
 }
 
-func (s *ApiService) GetUser(ctx context.Context, in *wrapperspb.StringValue) (*pb.User, error) {
-	u, err := orm.Da.GetUserByName(in.Value)
+func (s *ApiService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.User, error) {
+	u, err := orm.Da.GetUserByName(in.Username)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user: %v", err)
 	}
@@ -45,8 +47,8 @@ func (s *ApiService) GetUser(ctx context.Context, in *wrapperspb.StringValue) (*
 	return &user, nil
 }
 
-func (s *ApiService) SearchUsers(in *wrapperspb.StringValue, stream pb.Lenic_SearchUsersServer) error {
-	users, err := orm.Da.GetSearchUsers(in.Value)
+func (s *ApiService) SearchUsers(in *pb.SearchUsersRequest, stream pb.Lenic_SearchUsersServer) error {
+	users, err := orm.Da.GetSearchUsers(in.Username)
 	if err != nil {
 		return fmt.Errorf("could not get users: %v", err)
 	}
@@ -69,9 +71,9 @@ func (s *ApiService) SearchUsers(in *wrapperspb.StringValue, stream pb.Lenic_Sea
 	return nil
 }
 
-func (s *ApiService) GetUserFollowers(in *wrapperspb.StringValue, stream pb.Lenic_GetUserFollowersServer) error {
+func (s *ApiService) GetUserFollowers(in *pb.GetUserFollowersRequest, stream pb.Lenic_GetUserFollowersServer) error {
 
-	user, err := orm.Da.GetUserByName(in.Value)
+	user, err := orm.Da.GetUserByName(in.Username)
 	if err != nil {
 		return fmt.Errorf("could not get user by name: %v", err)
 	}
@@ -104,9 +106,9 @@ func (s *ApiService) GetUserFollowers(in *wrapperspb.StringValue, stream pb.Leni
 	return nil
 }
 
-func (s *ApiService) GetUserFollowing(in *wrapperspb.StringValue, stream pb.Lenic_GetUserFollowingServer) error {
+func (s *ApiService) GetUserFollowing(in *pb.GetUserFollowingRequest, stream pb.Lenic_GetUserFollowingServer) error {
 
-	user, err := orm.Da.GetUserByName(in.Value)
+	user, err := orm.Da.GetUserByName(in.Username)
 	if err != nil {
 		return fmt.Errorf("could not get user by name: %v", err)
 	}
@@ -139,57 +141,93 @@ func (s *ApiService) GetUserFollowing(in *wrapperspb.StringValue, stream pb.Leni
 	return nil
 }
 
-func (s *ApiService) FollowUser(ctx context.Context, in *pb.Follow) (*wrapperspb.StringValue, error) {
+func (s *ApiService) FollowUser(ctx context.Context, in *pb.Follow) (*pb.FollowUserResponse, error) {
+
+	res := &pb.FollowUserResponse{
+		Response: "NOK",
+	}
 
 	_, err := orm.Da.FollowUser(int(in.FollowerId), int(in.FollowedId))
 	if err != nil {
-		return nil, fmt.Errorf("error following user: %v", err)
+		return res, fmt.Errorf("error following user: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) AcceptFollow(ctx context.Context, in *pb.Follow) (*wrapperspb.StringValue, error) {
+func (s *ApiService) AcceptFollow(ctx context.Context, in *pb.Follow) (*pb.AcceptFollowResponse, error) {
+
+	res := &pb.AcceptFollowResponse{
+		Response: "NOK",
+	}
 
 	err := orm.Da.AcceptFollow(int(in.FollowerId), int(in.FollowedId))
 	if err != nil {
-		return nil, fmt.Errorf("error accepting follow: %v", err)
+		return res, fmt.Errorf("error accepting follow: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) UnfollowUser(ctx context.Context, in *pb.Follow) (*wrapperspb.StringValue, error) {
+func (s *ApiService) UnfollowUser(ctx context.Context, in *pb.Follow) (*pb.UnfollowUserResponse, error) {
+
+	res := &pb.UnfollowUserResponse{
+		Response: "NOK",
+	}
 
 	err := orm.Da.UnfollowUser(int(in.FollowerId), int(in.FollowedId))
 	if err != nil {
-		return nil, fmt.Errorf("error unfollowing: %v", err)
+		return res, fmt.Errorf("error unfollowing: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) UpdateUserPass(ctx context.Context, in *pb.User) (*wrapperspb.StringValue, error) {
+func (s *ApiService) UpdateUserPass(ctx context.Context, in *pb.User) (*pb.UpdateUserPassResponse, error) {
+
+	res := &pb.UpdateUserPassResponse{
+		Response: "NOK",
+	}
+
 	err := orm.Da.SetNewPassword(in.Username, in.Pass)
 	if err != nil {
-		return nil, fmt.Errorf("could not update password: %v", err)
+		return res, fmt.Errorf("could not update password: %v", err)
 	}
-	return wrapperspb.String("OK"), nil
+
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) DeleteUser(ctx context.Context, in *wrapperspb.StringValue) (*wrapperspb.StringValue, error) {
-	err := orm.Da.DeleteUser(in.Value)
+func (s *ApiService) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
+
+	res := &pb.DeleteUserResponse{
+		Response: "NOK",
+	}
+
+	err := orm.Da.DeleteUser(in.Username)
 	if err != nil {
-		return nil, fmt.Errorf("could not delete user: %v", err)
+		return res, fmt.Errorf("could not delete user: %v", err)
 	}
-	return wrapperspb.String("OK"), nil
+
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) StartConversation(ctx context.Context, in *pb.Conversation) (*wrapperspb.Int32Value, error) {
+func (s *ApiService) StartConversation(ctx context.Context, in *pb.Conversation) (*pb.StartConversationResponse, error) {
+
 	c := model.Conversation{
 		User1Id: int(in.User1Id),
 		User2Id: int(in.User2Id),
 	}
+
 	res, err := orm.Da.CreateConversation(&c)
 	if err != nil {
 		return nil, fmt.Errorf("could not create conversation: %v", err)
@@ -202,11 +240,16 @@ func (s *ApiService) StartConversation(ctx context.Context, in *pb.Conversation)
 
 	id := int32(id64)
 
-	return wrapperspb.Int32(id), nil
+	resp := &pb.StartConversationResponse{
+		Id: id,
+	}
+
+	return resp, nil
 }
 
-func (s *ApiService) GetUserConversations(in *wrapperspb.StringValue, stream pb.Lenic_GetUserConversationsServer) error {
-	u, err := orm.Da.GetUserByName(in.Value)
+func (s *ApiService) GetUserConversations(in *pb.GetUserConversationsRequest, stream pb.Lenic_GetUserConversationsServer) error {
+
+	u, err := orm.Da.GetUserByName(in.Username)
 	if err != nil {
 		return fmt.Errorf("could not get user id: %v", err)
 	}
@@ -232,22 +275,31 @@ func (s *ApiService) GetUserConversations(in *wrapperspb.StringValue, stream pb.
 	return nil
 }
 
-func (s *ApiService) ReadConversation(ctx context.Context, in *wrapperspb.Int32Value) (*wrapperspb.StringValue, error) {
-	dms, err := orm.Da.GetDMsByConversationId(int(in.Value))
+func (s *ApiService) ReadConversation(ctx context.Context, in *pb.ReadConversationRequest) (*pb.ReadConversationResponse, error) {
+
+	res := &pb.ReadConversationResponse{
+		Response: "NOK",
+	}
+
+	dms, err := orm.Da.GetDMsByConversationId(int(in.Id))
 	if err != nil {
-		return nil, fmt.Errorf("could not gt dms: %v", err)
+		return res, fmt.Errorf("could not gt dms: %v", err)
 	}
 
 	for _, dm := range dms {
 		err := orm.Da.UpdateDMReadById(dm.Id)
 		if err != nil {
-			return nil, fmt.Errorf("could not mark dm %v as read: %v", dm.Id, err)
+			return res, fmt.Errorf("could not mark dm %v as read: %v", dm.Id, err)
 		}
 	}
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) SendDM(ctx context.Context, in *pb.DM) (*wrapperspb.Int32Value, error) {
+func (s *ApiService) SendDM(ctx context.Context, in *pb.DM) (*pb.SendDMResponse, error) {
+
 	dm := model.DMessage{
 		ConversationId: int(in.ConversationId),
 		SenderId:       int(in.SenderId),
@@ -267,11 +319,15 @@ func (s *ApiService) SendDM(ctx context.Context, in *pb.DM) (*wrapperspb.Int32Va
 
 	id := int32(id64)
 
-	return wrapperspb.Int32(id), nil
+	resp := &pb.SendDMResponse{
+		Id: id,
+	}
+
+	return resp, nil
 }
 
-func (s *ApiService) GetConversationDMs(in *wrapperspb.Int32Value, stream pb.Lenic_GetConversationDMsServer) error {
-	dms, err := orm.Da.GetDMsByConversationId(int(in.Value))
+func (s *ApiService) GetConversationDMs(in *pb.GetConversationDMsRequest, stream pb.Lenic_GetConversationDMsServer) error {
+	dms, err := orm.Da.GetDMsByConversationId(int(in.Id))
 	if err != nil {
 		return fmt.Errorf("could not get DMs: %v", err)
 	}
@@ -293,7 +349,7 @@ func (s *ApiService) GetConversationDMs(in *wrapperspb.Int32Value, stream pb.Len
 	return nil
 }
 
-func (s *ApiService) CreatePost(ctx context.Context, in *pb.Post) (*wrapperspb.StringValue, error) {
+func (s *ApiService) CreatePost(ctx context.Context, in *pb.Post) (*pb.CreatePostResponse, error) {
 
 	guid := uuid.New().String()
 	p := model.Post{
@@ -313,11 +369,15 @@ func (s *ApiService) CreatePost(ctx context.Context, in *pb.Post) (*wrapperspb.S
 		return nil, fmt.Errorf("could not create post: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: guid}, nil
+	res := &pb.CreatePostResponse{
+		Uuid: guid,
+	}
+
+	return res, nil
 }
 
-func (s *ApiService) GetPost(ctx context.Context, in *wrapperspb.StringValue) (*pb.Post, error) {
-	p, err := orm.Da.GetPostByGUID(in.Value)
+func (s *ApiService) GetPost(ctx context.Context, in *pb.GetPostRequest) (*pb.Post, error) {
+	p, err := orm.Da.GetPostByGUID(in.Uuid)
 	if err != nil {
 		return nil, fmt.Errorf("could not get post: %v", err)
 	}
@@ -343,8 +403,8 @@ func (s *ApiService) GetPost(ctx context.Context, in *wrapperspb.StringValue) (*
 	return &post, nil
 }
 
-func (s *ApiService) GetUserPosts(in *wrapperspb.StringValue, stream pb.Lenic_GetUserPostsServer) error {
-	u, err := orm.Da.GetUserByName(in.Value)
+func (s *ApiService) GetUserPosts(in *pb.GetUserPostsRequest, stream pb.Lenic_GetUserPostsServer) error {
+	u, err := orm.Da.GetUserByName(in.Username)
 	if err != nil {
 		return fmt.Errorf("could not get user: %v", err)
 	}
@@ -379,8 +439,8 @@ func (s *ApiService) GetUserPosts(in *wrapperspb.StringValue, stream pb.Lenic_Ge
 	return nil
 }
 
-func (s *ApiService) GetUserPublicPosts(in *wrapperspb.StringValue, stream pb.Lenic_GetUserPostsServer) error {
-	u, err := orm.Da.GetUserByName(in.Value)
+func (s *ApiService) GetUserPublicPosts(in *pb.GetUserPublicPostsRequest, stream pb.Lenic_GetUserPostsServer) error {
+	u, err := orm.Da.GetUserByName(in.Username)
 	if err != nil {
 		return fmt.Errorf("could not get user: %v", err)
 	}
@@ -415,8 +475,8 @@ func (s *ApiService) GetUserPublicPosts(in *wrapperspb.StringValue, stream pb.Le
 	return nil
 }
 
-func (s *ApiService) GetFeed(in *wrapperspb.StringValue, stream pb.Lenic_GetFeedServer) error {
-	u, err := orm.Da.GetUserByName(in.Value)
+func (s *ApiService) GetFeed(in *pb.GetFeedRequest, stream pb.Lenic_GetFeedServer) error {
+	u, err := orm.Da.GetUserByName(in.Username)
 	if err != nil {
 		return fmt.Errorf("could not get user: %v", err)
 	}
@@ -451,25 +511,44 @@ func (s *ApiService) GetFeed(in *wrapperspb.StringValue, stream pb.Lenic_GetFeed
 	return nil
 }
 
-func (s *ApiService) RatePostUp(ctx context.Context, in *pb.PostRating) (*wrapperspb.StringValue, error) {
+func (s *ApiService) RatePostUp(ctx context.Context, in *pb.PostRating) (*pb.RatePostUpResponse, error) {
+
+	res := &pb.RatePostUpResponse{
+		Response: "NOK",
+	}
+
 	err := orm.Da.RatePostUp(int(in.PostId), int(in.UserId))
 	if err != nil {
-		return nil, fmt.Errorf("could not rate post up: %v", err)
+		return res, fmt.Errorf("could not rate post up: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) RatePostDown(ctx context.Context, in *pb.PostRating) (*wrapperspb.StringValue, error) {
+func (s *ApiService) RatePostDown(ctx context.Context, in *pb.PostRating) (*pb.RatePostDownResponse, error) {
+
+	res := &pb.RatePostDownResponse{
+		Response: "NOK",
+	}
+
 	err := orm.Da.RatePostDown(int(in.PostId), int(in.UserId))
 	if err != nil {
-		return nil, fmt.Errorf("could not rate post down: %v", err)
+		return res, fmt.Errorf("could not rate post down: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) UpdatePost(ctx context.Context, in *pb.Post) (*wrapperspb.StringValue, error) {
+func (s *ApiService) UpdatePost(ctx context.Context, in *pb.Post) (*pb.UpdatePostResponse, error) {
+
+	res := &pb.UpdatePostResponse{
+		Response: "NOK",
+	}
+
 	p := model.Post{
 		GUID:     in.PostGuid,
 		Title:    in.Title,
@@ -479,22 +558,31 @@ func (s *ApiService) UpdatePost(ctx context.Context, in *pb.Post) (*wrapperspb.S
 
 	err := orm.Da.UpdatePost(p)
 	if err != nil {
-		return nil, fmt.Errorf("could not update post: %v", err)
+		return res, fmt.Errorf("could not update post: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) DeletePost(ctx context.Context, in *wrapperspb.StringValue) (*wrapperspb.StringValue, error) {
-	err := orm.Da.DisablePost(in.Value)
+func (s *ApiService) DeletePost(ctx context.Context, in *pb.DeletePostRequest) (*pb.DeletePostResponse, error) {
+
+	res := &pb.DeletePostResponse{
+		Response: "NOK",
+	}
+
+	err := orm.Da.DisablePost(in.Uuid)
 	if err != nil {
 		return nil, fmt.Errorf("could not delete post: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) CreateComment(ctx context.Context, in *pb.Comment) (*wrapperspb.Int32Value, error) {
+func (s *ApiService) CreateComment(ctx context.Context, in *pb.Comment) (*pb.CreateCommentResponse, error) {
 
 	c := model.Comment{
 		PostGUID: in.PostGuid,
@@ -516,11 +604,15 @@ func (s *ApiService) CreateComment(ctx context.Context, in *pb.Comment) (*wrappe
 
 	id := int32(id64)
 
-	return wrapperspb.Int32(id), nil
+	resp := &pb.CreateCommentResponse{
+		Id: id,
+	}
+
+	return resp, nil
 }
 
-func (s *ApiService) GetComment(ctx context.Context, in *wrapperspb.Int32Value) (*pb.Comment, error) {
-	c, err := orm.Da.GetCommentById(int(in.Value))
+func (s *ApiService) GetComment(ctx context.Context, in *pb.GetCommentRequest) (*pb.Comment, error) {
+	c, err := orm.Da.GetCommentById(int(in.Id))
 	if err != nil {
 		return nil, fmt.Errorf("could not get comment: %v", err)
 	}
@@ -543,8 +635,8 @@ func (s *ApiService) GetComment(ctx context.Context, in *wrapperspb.Int32Value) 
 	return &comment, nil
 }
 
-func (s *ApiService) GetCommentsFromPost(in *wrapperspb.StringValue, stream pb.Lenic_GetCommentsFromPostServer) error {
-	comments, err := orm.Da.GetCommentsByPost(in.Value)
+func (s *ApiService) GetCommentsFromPost(in *pb.GetCommentsFromPostRequest, stream pb.Lenic_GetCommentsFromPostServer) error {
+	comments, err := orm.Da.GetCommentsByPost(in.Uuid)
 	if err != nil {
 		return fmt.Errorf("could not get commentss: %v", err)
 	}
@@ -572,38 +664,66 @@ func (s *ApiService) GetCommentsFromPost(in *wrapperspb.StringValue, stream pb.L
 	return nil
 }
 
-func (s *ApiService) RateCommentUp(ctx context.Context, in *pb.CommentRating) (*wrapperspb.StringValue, error) {
+func (s *ApiService) RateCommentUp(ctx context.Context, in *pb.CommentRating) (*pb.RateCommentUpResponse, error) {
+
+	res := &pb.RateCommentUpResponse{
+		Response: "NOK",
+	}
+
 	err := orm.Da.RateCommentUp(int(in.CommentId), int(in.UserId))
 	if err != nil {
-		return nil, fmt.Errorf("could not rate comment up: %v", err)
+		return res, fmt.Errorf("could not rate comment up: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) RateCommentDown(ctx context.Context, in *pb.CommentRating) (*wrapperspb.StringValue, error) {
+func (s *ApiService) RateCommentDown(ctx context.Context, in *pb.CommentRating) (*pb.RateCommentDownResponse, error) {
+
+	res := &pb.RateCommentDownResponse{
+		Response: "NOK",
+	}
+
 	err := orm.Da.RateCommentDown(int(in.CommentId), int(in.UserId))
 	if err != nil {
-		return nil, fmt.Errorf("could not rate comment down: %v", err)
+		return res, fmt.Errorf("could not rate comment down: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) UpdateComment(ctx context.Context, in *pb.Comment) (*wrapperspb.StringValue, error) {
+func (s *ApiService) UpdateComment(ctx context.Context, in *pb.Comment) (*pb.UpdateCommentResponse, error) {
+
+	res := &pb.UpdateCommentResponse{
+		Response: "NOK",
+	}
+
 	err := orm.Da.UpdateCommentText(int(in.Id), in.Content)
 	if err != nil {
-		return nil, fmt.Errorf("could not update comment: %v", err)
+		return res, fmt.Errorf("could not update comment: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+	res.Response = "OK"
+
+	return res, nil
 }
 
-func (s *ApiService) DeleteComment(ctx context.Context, in *wrapperspb.Int32Value) (*wrapperspb.StringValue, error) {
-	err := orm.Da.DisableComment(int(in.Value))
+func (s *ApiService) DeleteComment(ctx context.Context, in *pb.DeleteCommentRequest) (*pb.DeleteCommentResponse, error) {
+
+	res := &pb.DeleteCommentResponse{
+		Response: "NOK",
+	}
+
+	err := orm.Da.DisableComment(int(in.Id))
 	if err != nil {
 		return nil, fmt.Errorf("could not delete comment: %v", err)
 	}
 
-	return &wrapperspb.StringValue{Value: "OK"}, nil
+	res.Response = "OK"
+
+	return res, nil
 }

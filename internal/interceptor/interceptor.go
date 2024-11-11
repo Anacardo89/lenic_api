@@ -91,23 +91,17 @@ func isUserOnlyAccess(method string) bool {
 		return true
 	case "/Lenic/GetFeed":
 		return true
-	case "/Lenic/RatePostUp":
-		return true
-	case "/Lenic/RatePostDown":
-		return true
 	case "/Lenic/UpdatePost":
 		return true
 	case "/Lenic/DeletePost":
 		return true
 	case "/Lenic/CreateComment":
 		return true
-	case "/Lenic/RateCommentUp":
-		return true
-	case "/Lenic/RateCommentDown":
-		return true
 	case "/Lenic/UpdateComment":
 		return true
 	case "/Lenic/DeleteComment":
 		return true
+	default:
+		return false
 	}
 }
