@@ -5,6 +5,10 @@ import "google/protobuf/wrappers.proto";
 package lenic;
 option go_package = "github.com/anacardo89/lenic_api/internal/pb";
 
+service CreateUserService {
+  rpc CreateUser(User) returns (CreateUserResponse);
+}
+
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
 }
@@ -19,38 +23,185 @@ message LoginResponse {
 }
 
 service Lenic {
-  rpc CreateUser(User) returns (google.protobuf.Int32Value);
-  rpc ActivateUser(google.protobuf.StringValue) returns (google.protobuf.StringValue);
-  rpc GetUser(google.protobuf.StringValue) returns (User);
-  rpc SearchUsers(google.protobuf.StringValue) returns (stream User);
-  rpc GetUserFollowers(google.protobuf.StringValue) returns (stream User);
-  rpc GetUserFollowing(google.protobuf.StringValue) returns (stream User);
-  rpc FollowUser(Follow) returns (google.protobuf.StringValue);
-  rpc AcceptFollow(Follow) returns (google.protobuf.StringValue);
-  rpc UnfollowUser(Follow) returns (google.protobuf.StringValue);
-  rpc UpdateUserPass(User) returns (google.protobuf.StringValue);
-  rpc DeleteUser(google.protobuf.StringValue) returns (google.protobuf.StringValue);
-  rpc StartConversation(Conversation) returns (google.protobuf.Int32Value);
-  rpc GetUserConversations(google.protobuf.StringValue) returns (stream Conversation);
-  rpc ReadConversation(google.protobuf.Int32Value) returns (google.protobuf.StringValue);
-  rpc SendDM(DM) returns (google.protobuf.Int32Value);
-  rpc GetConversationDMs(google.protobuf.Int32Value) returns (stream DM);
-  rpc CreatePost(Post) returns (google.protobuf.StringValue);
-  rpc GetPost(google.protobuf.StringValue) returns (Post);
-  rpc GetUserPosts(google.protobuf.StringValue) returns (stream Post);
-  rpc GetUserPublicPosts(google.protobuf.StringValue) returns (stream Post);
-  rpc GetFeed(google.protobuf.StringValue) returns (stream Post);
-  rpc RatePostUp(PostRating) returns (google.protobuf.StringValue);
-  rpc RatePostDown(PostRating) returns (google.protobuf.StringValue);
-  rpc UpdatePost(Post) returns (google.protobuf.StringValue);
-  rpc DeletePost(google.protobuf.StringValue) returns (google.protobuf.StringValue);
-  rpc CreateComment(Comment) returns (google.protobuf.Int32Value);
-  rpc GetComment(google.protobuf.Int32Value) returns (Comment);
-  rpc GetCommentsFromPost(google.protobuf.StringValue) returns (stream Comment);
-  rpc RateCommentUp(CommentRating) returns (google.protobuf.StringValue);
-  rpc RateCommentDown(CommentRating) returns (google.protobuf.StringValue);
-  rpc UpdateComment(Comment) returns (google.protobuf.StringValue);
-  rpc DeleteComment(google.protobuf.Int32Value) returns (google.protobuf.StringValue);
+  rpc ActivateUser(ActivateUserRequest) returns (ActivateUserResponse);
+  rpc GetUser(GetUserRequest) returns (User);
+  rpc SearchUsers(SearchUsersRequest) returns (stream User);
+  rpc GetUserFollowers(GetUserFollowersRequest) returns (stream User);
+  rpc GetUserFollowing(GetUserFollowingRequest) returns (stream User);
+  rpc FollowUser(Follow) returns (FollowUserResponse);
+  rpc AcceptFollow(Follow) returns (AcceptFollowResponse);
+  rpc UnfollowUser(Follow) returns (UnfollowUserResponse);
+  rpc UpdateUserPass(User) returns (UpdateUserPassResponse);
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  rpc StartConversation(Conversation) returns (StartConversationResponse);
+  rpc GetUserConversations(GetUserConversationsRequest) returns (stream Conversation);
+  rpc ReadConversation(ReadConversationRequest) returns (ReadConversationResponse);
+  rpc SendDM(DM) returns (SendDMResponse);
+  rpc GetConversationDMs(GetConversationDMsRequest) returns (stream DM);
+  rpc CreatePost(Post) returns (CreatePostResponse);
+  rpc GetPost(GetPostRequest) returns (Post);
+  rpc GetUserPosts(GetUserPostsRequest) returns (stream Post);
+  rpc GetUserPublicPosts(GetUserPublicPostsRequest) returns (stream Post);
+  rpc GetFeed(GetFeedRequest) returns (stream Post);
+  rpc RatePostUp(PostRating) returns (RatePostUpResponse);
+  rpc RatePostDown(PostRating) returns (RatePostDownResponse);
+  rpc UpdatePost(Post) returns (UpdatePostResponse);
+  rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
+  rpc CreateComment(Comment) returns (CreateCommentResponse);
+  rpc GetComment(GetCommentRequest) returns (Comment);
+  rpc GetCommentsFromPost(GetCommentsFromPostRequest) returns (stream Comment);
+  rpc RateCommentUp(CommentRating) returns (RateCommentUpResponse);
+  rpc RateCommentDown(CommentRating) returns (RateCommentDownResponse);
+  rpc UpdateComment(Comment) returns (UpdateCommentResponse);
+  rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
+}
+
+message CreateUserResponse {
+  int32 id = 1;
+}
+
+message ActivateUserRequest {
+  string username = 1;
+}
+
+message ActivateUserResponse {
+  string response = 1;
+}
+
+message GetUserRequest {
+  string username = 1;
+}
+
+message SearchUsersRequest {
+  string username = 1;
+}
+
+message GetUserFollowersRequest {
+  string username = 1;
+}
+
+message GetUserFollowingRequest {
+  string username = 1;
+}
+
+message FollowUserResponse {
+  string response = 1;
+}
+
+message AcceptFollowResponse {
+  string response = 1;
+}
+
+message UnfollowUserResponse {
+  string response = 1;
+}
+
+message UpdateUserPassResponse {
+  string response = 1;
+}
+
+message DeleteUserRequest {
+  string username = 1;
+}
+
+message DeleteUserResponse {
+  string response = 1;
+}
+
+message StartConversationResponse {
+  int32 id = 1;
+}
+
+message GetUserConversationsRequest {
+  string username = 1;
+}
+
+message ReadConversationRequest {
+  int32 id = 1;
+}
+
+message ReadConversationResponse {
+  string response = 1;
+}
+
+message SendDMResponse {
+  int32 id = 1;
+}
+
+message GetConversationDMsRequest {
+  int32 id = 1;
+}
+
+message CreatePostResponse {
+  string uuid = 1;
+}
+
+message GetPostRequest {
+  uuid = 1;
+}
+
+message GetUserPostsRequest {
+  username = 1;
+}
+
+message GetUserPublicPostsRequest {
+  username = 1;
+}
+
+message GetFeedRequest {
+  username = 1;
+}
+
+message RatePostUpResponse {
+  string response = 1;
+}
+
+message RatePostDownResponse {
+  string response = 1;
+}
+
+message UpdatePostResponse {
+  string response = 1;
+}
+
+message DeletePostRequest {
+  string uuid = 1;
+}
+
+message DeletePostResponse {
+  string response = 1;
+}
+
+message CreateCommentResponse {
+  int32 id = 1;
+}
+
+message GetCommentRequest {
+  int32 id = 1;
+}
+
+message GetCommentsFromPostRequest {
+  string uuid = 1;
+}
+
+message RateCommentUpResponse {
+  string response = 1;
+}
+
+message RateCommentDownResponse {
+  string response = 1;
+}
+
+message UpdateCommentResponse {
+  string response = 1;
+}
+
+message DeleteCommentRequest {
+  int32 id = 1;
+}
+
+message DeleteCommentResponse {
+  string response = 1;
 }
 
 message User {
