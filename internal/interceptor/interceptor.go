@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/Anacardo89/lenic_api/internal/data/orm"
+	"github.com/Anacardo89/lenic_api/internal/pb"
 	"github.com/Anacardo89/lenic_api/pkg/auth"
 	"github.com/dgrijalva/jwt-go"
 	"google.golang.org/grpc"
@@ -30,12 +32,25 @@ func AuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServe
 	}
 
 	method := info.FullMethod
+
+	if canBePublic(method) {
+		uuid := getUUIDFromRequest(req)
+
+		if getIsPublic(uuid) {
+			return handler(ctx, req)
+		} else {
+			if !isSelfRequest(claims.Username, req) && !isFollowerRequest(claims.FollowingIDs, req) {
+				return nil, status.Errorf(codes.PermissionDenied, "access denied for private post")
+			}
+		}
+	}
+
 	if isUserOnlyAccess(method) {
-		if !isSelfRequest(userID, req) {
+		if !isSelfRequest(claims.Username, req) {
 			return nil, status.Errorf(codes.PermissionDenied, "access denied")
 		}
 	} else if isFollowerAccess(method) {
-		if !isFollowerRequest(userID, req) {
+		if !isSelfRequest(claims.Username, req) && !isFollowerRequest(claims.FollowingIDs, req) {
 			return nil, status.Errorf(codes.PermissionDenied, "access restricted to followers")
 		}
 	}
@@ -63,19 +78,237 @@ func parseJWT(tokenString string) (*auth.Claims, error) {
 	return claims, nil
 }
 
+func isFollowerAccess(method string) bool {
+	switch method {
+	case "/Lenic/GetUserPosts":
+		return true
+	default:
+		return false
+	}
+
+}
+
+func canBePublic(method string) bool {
+	switch method {
+	case "/Lenic/GetPost":
+		return true
+	case "/Lenic/GetComment":
+		return true
+	case "/Lenic/GetCommentsFromPost":
+		return true
+	case "/Lenic/RatePostUp":
+		return true
+	case "/Lenic/RatePostDown":
+		return true
+	case "/Lenic/RateCommentUp":
+		return true
+	case "/Lenic/RateCommentDown":
+		return true
+	default:
+		return false
+	}
+}
+
+func isFollowerRequest(following []string, request interface{}) bool {
+	switch req := request.(type) {
+	case *pb.GetUserPostsRequest:
+		for _, f := range following {
+			if f == req.Username {
+				return true
+			}
+		}
+		return false
+	case *pb.GetPostRequest:
+		p, err := orm.Da.GetPostByGUID(req.Uuid)
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return false
+		}
+		for _, f := range following {
+			if f == u.UserName {
+				return true
+			}
+		}
+		return false
+	case *pb.GetCommentRequest:
+		c, err := orm.Da.GetCommentById(int(req.Id))
+		if err != nil {
+			return false
+		}
+		p, err := orm.Da.GetPostByGUID(c.PostGUID)
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return false
+		}
+		for _, f := range following {
+			if f == u.UserName {
+				return true
+			}
+		}
+		return false
+	case *pb.GetCommentsFromPostRequest:
+		p, err := orm.Da.GetPostByGUID(req.Uuid)
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return false
+		}
+		for _, f := range following {
+			if f == u.UserName {
+				return true
+			}
+		}
+		return false
+	case *pb.PostRating:
+		p, err := orm.Da.GetPostByID(int(req.PostId))
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return false
+		}
+		for _, f := range following {
+			if f == u.UserName {
+				return true
+			}
+		}
+		return false
+	case *pb.CommentRating:
+		c, err := orm.Da.GetCommentById(int(req.CommentId))
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return false
+		}
+		for _, f := range following {
+			if f == u.UserName {
+				return true
+			}
+		}
+		return false
+	default:
+		return false
+	}
+}
+
+func getUUIDFromRequest(request interface{}) string {
+	switch req := request.(type) {
+	case *pb.GetPostRequest:
+		return req.Uuid
+	case *pb.GetCommentRequest:
+		c, err := orm.Da.GetCommentById(int(req.Id))
+		if err != nil {
+			return ""
+		}
+		return c.PostGUID
+	case *pb.GetCommentsFromPostRequest:
+		return req.Uuid
+	case *pb.PostRating:
+		p, err := orm.Da.GetPostByID(int(req.PostId))
+		if err != nil {
+			return ""
+		}
+		return p.GUID
+	case *pb.CommentRating:
+		c, err := orm.Da.GetCommentById(int(req.CommentId))
+		if err != nil {
+			return ""
+		}
+		return c.PostGUID
+	default:
+		return ""
+	}
+}
+
+func getAuthorFromRequest(request interface{}) string {
+	switch req := request.(type) {
+	case *pb.GetPostRequest:
+		p, err := orm.Da.GetPostByGUID(req.Uuid)
+		if err != nil {
+			return ""
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return ""
+		}
+		return u.UserName
+	case *pb.GetCommentRequest:
+		c, err := orm.Da.GetCommentById(int(req.Id))
+		if err != nil {
+			return ""
+		}
+		u, err := orm.Da.GetUserByID(c.AuthorId)
+		if err != nil {
+			return ""
+		}
+		return u.UserName
+	case *pb.GetCommentsFromPostRequest:
+		p, err := orm.Da.GetPostByGUID(req.Uuid)
+		if err != nil {
+			return ""
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return ""
+		}
+		return u.UserName
+	case *pb.PostRating:
+		p, err := orm.Da.GetPostByID(int(req.PostId))
+		if err != nil {
+			return ""
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return ""
+		}
+		return u.UserName
+	case *pb.CommentRating:
+		c, err := orm.Da.GetCommentById(int(req.CommentId))
+		if err != nil {
+			return ""
+		}
+		u, err := orm.Da.GetUserByID(c.AuthorId)
+		if err != nil {
+			return ""
+		}
+		return u.UserName
+	default:
+		return ""
+	}
+}
+
+func getIsPublic(uuid string) bool {
+	p, err := orm.Da.GetPostByGUID(uuid)
+	if err != nil {
+		return false
+	}
+	return p.IsPublic
+}
+
 func isUserOnlyAccess(method string) bool {
 	switch method {
 	case "/Lenic/ActivateUser":
+		return true
+	case "/Lenic/UpdateUserPass":
+		return true
+	case "/Lenic/DeleteUser":
 		return true
 	case "/Lenic/FollowUser":
 		return true
 	case "/Lenic/AcceptFollowUser":
 		return true
 	case "/Lenic/UnfollowUser":
-		return true
-	case "/Lenic/UpdateUserPass":
-		return true
-	case "/Lenic/DeleteUser":
 		return true
 	case "/Lenic/StartConversation":
 		return true
@@ -101,6 +334,129 @@ func isUserOnlyAccess(method string) bool {
 		return true
 	case "/Lenic/DeleteComment":
 		return true
+	default:
+		return false
+	}
+}
+
+func isSelfRequest(username string, request interface{}) bool {
+	switch req := request.(type) {
+	case *pb.ActivateUserRequest:
+		return req.Username == username
+	case *pb.User:
+		return req.Username == username
+	case *pb.DeleteUserRequest:
+		return req.Username == username
+	case *pb.FollowUserRequest:
+		u, err := orm.Da.GetUserByID(req.FollowerId)
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
+	case *pb.AcceptFollowRequest:
+		u, err := orm.Da.GetUserByID(req.FollowedId)
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
+	case *pb.UnfollowUserRequest:
+		u, err := orm.Da.GetUserByID(req.FollowedId)
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
+	case *pb.Conversation:
+		u1, err := orm.Da.GetUserByID(int(req.User1Id))
+		if err != nil {
+			return false
+		}
+		u2, err := orm.Da.GetUserByID(int(req.User1Id))
+		if err != nil {
+			return false
+		}
+		return u1.UserName == username || u2.UserName == username
+	case *pb.GetUserConversationsRequest:
+		return req.Username == username
+	case *pb.ReadConversationRequest:
+		c, err := orm.Da.GetConversationById(int(req.Id))
+		if err != nil {
+			return false
+		}
+		u1, err := orm.Da.GetUserByID(int(c.User1Id))
+		if err != nil {
+			return false
+		}
+		u2, err := orm.Da.GetUserByID(int(c.User1Id))
+		if err != nil {
+			return false
+		}
+		return u1.UserName == username || u2.UserName == username
+	case *pb.DM:
+		c, err := orm.Da.GetConversationById(int(req.Id))
+		if err != nil {
+			return false
+		}
+		u1, err := orm.Da.GetUserByID(int(c.User1Id))
+		if err != nil {
+			return false
+		}
+		u2, err := orm.Da.GetUserByID(int(c.User1Id))
+		if err != nil {
+			return false
+		}
+		return u1.UserName == username || u2.UserName == username
+	case *pb.GetConversationDMsRequest:
+		c, err := orm.Da.GetConversationById(int(req.Id))
+		if err != nil {
+			return false
+		}
+		u1, err := orm.Da.GetUserByID(int(c.User1Id))
+		if err != nil {
+			return false
+		}
+		u2, err := orm.Da.GetUserByID(int(c.User1Id))
+		if err != nil {
+			return false
+		}
+		return u1.UserName == username || u2.UserName == username
+	case *pb.Post:
+		u, err := orm.Da.GetUserByID(int(req.AuthorId))
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
+	case *pb.DeletePostRequest:
+		p, err := orm.Da.GetPostByGUID(req.Uuid)
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
+	case *pb.GetFeedRequest:
+		return req.Username == username
+	case *pb.Comment:
+		p, err := orm.Da.GetPostByGUID(req.PostGuid)
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
+	case *pb.DeleteCommentRequest:
+		c, err := orm.Da.GetCommentById(int(req.Id))
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(c.AuthorId)
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
 	default:
 		return false
 	}
