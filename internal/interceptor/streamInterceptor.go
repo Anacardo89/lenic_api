@@ -14,10 +14,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type wrappedSteam struct {
-	grpc.ServerStream
-}
-
 func AuthStreamInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 
 	ctx := ss.Context()
@@ -91,16 +87,13 @@ func extractClaimsFromContext(ctx context.Context) (*auth.Claims, error) {
 }
 
 func extractRequestFromStream(stream grpc.ServerStream) (interface{}, error) {
-	// Create a variable to hold the request
 	var req interface{}
 
-	// Use the stream's RecvMsg method to read the first request message
 	err := stream.RecvMsg(&req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read message from stream: %w", err)
 	}
 
-	// Optionally, log or handle information about the peer (client)
 	if p, ok := peer.FromContext(stream.Context()); ok {
 		fmt.Printf("Request received from peer: %s\n", p.Addr)
 	}
