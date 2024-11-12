@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func AuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+func AuthUnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, errors.New("missing metadata")
@@ -94,7 +94,7 @@ func canBePublic(method string) bool {
 		return true
 	case "/Lenic/GetComment":
 		return true
-	case "/Lenic/GetCommentsFromPost":
+	case "/Lenic/GetCommentsFromPost": //Stream
 		return true
 	case "/Lenic/RatePostUp":
 		return true
@@ -187,7 +187,7 @@ func isFollowerRequest(following []string, request interface{}) bool {
 		if err != nil {
 			return false
 		}
-		u, err := orm.Da.GetUserByID(p.AuthorId)
+		u, err := orm.Da.GetUserByID(c.AuthorId)
 		if err != nil {
 			return false
 		}
@@ -312,17 +312,17 @@ func isUserOnlyAccess(method string) bool {
 		return true
 	case "/Lenic/StartConversation":
 		return true
-	case "/Lenic/GetUserConversations":
+	case "/Lenic/GetUserConversations": // stream
 		return true
 	case "/Lenic/ReadConversation":
 		return true
 	case "/Lenic/SendDM":
 		return true
-	case "/Lenic/GetConversationDMs":
+	case "/Lenic/GetConversationDMs": // stream
 		return true
 	case "/Lenic/CreatePost":
 		return true
-	case "/Lenic/GetFeed":
+	case "/Lenic/GetFeed": // stream
 		return true
 	case "/Lenic/UpdatePost":
 		return true
