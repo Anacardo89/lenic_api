@@ -3,24 +3,9 @@ syntax = "proto3";
 package lenic;
 option go_package = "github.com/anacardo89/lenic_api/internal/pb";
 
-service CreateUserService {
-  rpc CreateUser(User) returns (CreateUserResponse);
-}
-
-service AuthService {
-  rpc Login(LoginRequest) returns (LoginResponse);
-}
-
-message LoginRequest {
-  string username = 1;
-  string password = 2;
-}
-
-message LoginResponse {
-  string token = 1;
-}
-
 service Lenic {
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc CreateUser(User) returns (CreateUserResponse);
   rpc ActivateUser(ActivateUserRequest) returns (ActivateUserResponse);
   rpc GetUser(GetUserRequest) returns (User);
   rpc SearchUsers(SearchUsersRequest) returns (stream User);
@@ -54,6 +39,34 @@ service Lenic {
   rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
 }
 
+
+// Login
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string token = 1;
+}
+
+
+// User
+
+message User {
+  int32 id = 1;
+  string username = 2;
+  string email = 3;
+  string pass = 4;
+  string hashpass = 5;
+  int32 user_followers = 6;
+  int32 user_following = 7;
+  string created_at = 8;
+  string updated_at = 9;
+  int32 active = 10;
+}
+
 message CreateUserResponse {
   int32 id = 1;
 }
@@ -82,18 +95,6 @@ message GetUserFollowingRequest {
   string username = 1;
 }
 
-message FollowUserResponse {
-  string response = 1;
-}
-
-message AcceptFollowResponse {
-  string response = 1;
-}
-
-message UnfollowUserResponse {
-  string response = 1;
-}
-
 message UpdateUserPassResponse {
   string response = 1;
 }
@@ -104,6 +105,47 @@ message DeleteUserRequest {
 
 message DeleteUserResponse {
   string response = 1;
+}
+
+
+// Follow
+
+message FollowUserRequest {
+  int32 follower_id = 1;
+  int32 followed_id = 2;
+}
+
+message FollowUserResponse {
+  string response = 1;
+}
+
+message AcceptFollowRequest {
+  int32 follower_id = 1;
+  int32 followed_id = 2;
+}
+
+message AcceptFollowResponse {
+  string response = 1;
+}
+
+message UnfollowRequest {
+  int32 follower_id = 1;
+  int32 followed_id = 2;
+}
+
+message UnfollowUserResponse {
+  string response = 1;
+}
+
+
+// Conversation
+
+message Conversation {
+  int32 id = 1;
+  int32 user1_id = 2;
+  int32 user2_id = 3;
+  string created_at = 4;
+  string updated_at = 5;
 }
 
 message StartConversationResponse {
@@ -122,12 +164,40 @@ message ReadConversationResponse {
   string response = 1;
 }
 
+
+// DMs
+
+message DM {
+  int32 id = 1;
+  int32 conversation_id = 2;
+  int32 sender_id = 3;
+  string content = 4;
+  bool is_read = 5;
+  string created_at = 6;
+}
+
 message SendDMResponse {
   int32 id = 1;
 }
 
 message GetConversationDMsRequest {
   int32 id = 1;
+}
+
+
+// Post
+
+message Post {
+  int32 id = 1;
+  string post_guid = 2;
+  int32 author_id = 3;
+  string title = 4;
+  string content = 5;
+  string created_at = 6;
+  string updated_at = 7;
+  bool is_public = 8;
+  int32 rating = 9;
+  bool active = 10;
 }
 
 message CreatePostResponse {
@@ -150,14 +220,6 @@ message GetFeedRequest {
   string username = 1;
 }
 
-message RatePostUpResponse {
-  string response = 1;
-}
-
-message RatePostDownResponse {
-  string response = 1;
-}
-
 message UpdatePostResponse {
   string response = 1;
 }
@@ -168,6 +230,35 @@ message DeletePostRequest {
 
 message DeletePostResponse {
   string response = 1;
+}
+
+
+// Post Rating
+
+message PostRating {
+  int32 post_id = 1;
+  int32 user_id = 2;
+}
+
+message RatePostUpResponse {
+  string response = 1;
+}
+
+message RatePostDownResponse {
+  string response = 1;
+}
+
+// Comment
+
+message Comment {
+  int32 id = 1;
+  string post_guid = 2;
+  int32 author_id = 3;
+  string content = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  int32 rating = 7;
+  bool active = 8; 
 }
 
 message CreateCommentResponse {
@@ -182,14 +273,6 @@ message GetCommentsFromPostRequest {
   string uuid = 1;
 }
 
-message RateCommentUpResponse {
-  string response = 1;
-}
-
-message RateCommentDownResponse {
-  string response = 1;
-}
-
 message UpdateCommentResponse {
   string response = 1;
 }
@@ -202,81 +285,17 @@ message DeleteCommentResponse {
   string response = 1;
 }
 
-message User {
-  int32 id = 1;
-  string username = 2;
-  string email = 3;
-  string pass = 4;
-  string hashpass = 5;
-  int32 user_followers = 6;
-  int32 user_following = 7;
-  string created_at = 8;
-  string updated_at = 9;
-  int32 active = 10;
-}
-
-message FollowUserRequest {
-  int32 follower_id = 1;
-  int32 followed_id = 2;
-}
-
-message AcceptFollowRequest {
-  int32 follower_id = 1;
-  int32 followed_id = 2;
-}
-
-message UnfollowRequest {
-  int32 follower_id = 1;
-  int32 followed_id = 2;
-}
-
-message Conversation {
-  int32 id = 1;
-  int32 user1_id = 2;
-  int32 user2_id = 3;
-  string created_at = 4;
-  string updated_at = 5;
-}
-
-message DM {
-  int32 id = 1;
-  int32 conversation_id = 2;
-  int32 sender_id = 3;
-  string content = 4;
-  bool is_read = 5;
-  string created_at = 6;
-}
-
-message Post {
-  int32 id = 1;
-  string post_guid = 2;
-  int32 author_id = 3;
-  string title = 4;
-  string content = 5;
-  string created_at = 6;
-  string updated_at = 7;
-  bool is_public = 8;
-  int32 rating = 9;
-  bool active = 10;
-}
-
-message PostRating {
-  int32 post_id = 1;
-  int32 user_id = 2;
-}
-
-message Comment {
-  int32 id = 1;
-  string post_guid = 2;
-  int32 author_id = 3;
-  string content = 4;
-  string created_at = 5;
-  string updated_at = 6;
-  int32 rating = 7;
-  bool active = 8; 
-}
+// Comment Rating
 
 message CommentRating {
   int32 comment_id = 1;
   int32 user_id = 2;
+}
+
+message RateCommentUpResponse {
+  string response = 1;
+}
+
+message RateCommentDownResponse {
+  string response = 1;
 }

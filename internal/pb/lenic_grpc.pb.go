@@ -19,210 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CreateUserService_CreateUser_FullMethodName = "/lenic.CreateUserService/CreateUser"
-)
-
-// CreateUserServiceClient is the client API for CreateUserService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type CreateUserServiceClient interface {
-	CreateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*CreateUserResponse, error)
-}
-
-type createUserServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewCreateUserServiceClient(cc grpc.ClientConnInterface) CreateUserServiceClient {
-	return &createUserServiceClient{cc}
-}
-
-func (c *createUserServiceClient) CreateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*CreateUserResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateUserResponse)
-	err := c.cc.Invoke(ctx, CreateUserService_CreateUser_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// CreateUserServiceServer is the server API for CreateUserService service.
-// All implementations must embed UnimplementedCreateUserServiceServer
-// for forward compatibility.
-type CreateUserServiceServer interface {
-	CreateUser(context.Context, *User) (*CreateUserResponse, error)
-	mustEmbedUnimplementedCreateUserServiceServer()
-}
-
-// UnimplementedCreateUserServiceServer must be embedded to have
-// forward compatible implementations.
-//
-// NOTE: this should be embedded by value instead of pointer to avoid a nil
-// pointer dereference when methods are called.
-type UnimplementedCreateUserServiceServer struct{}
-
-func (UnimplementedCreateUserServiceServer) CreateUser(context.Context, *User) (*CreateUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
-}
-func (UnimplementedCreateUserServiceServer) mustEmbedUnimplementedCreateUserServiceServer() {}
-func (UnimplementedCreateUserServiceServer) testEmbeddedByValue()                           {}
-
-// UnsafeCreateUserServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to CreateUserServiceServer will
-// result in compilation errors.
-type UnsafeCreateUserServiceServer interface {
-	mustEmbedUnimplementedCreateUserServiceServer()
-}
-
-func RegisterCreateUserServiceServer(s grpc.ServiceRegistrar, srv CreateUserServiceServer) {
-	// If the following call pancis, it indicates UnimplementedCreateUserServiceServer was
-	// embedded by pointer and is nil.  This will cause panics if an
-	// unimplemented method is ever invoked, so we test this at initialization
-	// time to prevent it from happening at runtime later due to I/O.
-	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
-		t.testEmbeddedByValue()
-	}
-	s.RegisterService(&CreateUserService_ServiceDesc, srv)
-}
-
-func _CreateUserService_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(User)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CreateUserServiceServer).CreateUser(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CreateUserService_CreateUser_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CreateUserServiceServer).CreateUser(ctx, req.(*User))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// CreateUserService_ServiceDesc is the grpc.ServiceDesc for CreateUserService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var CreateUserService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "lenic.CreateUserService",
-	HandlerType: (*CreateUserServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "CreateUser",
-			Handler:    _CreateUserService_CreateUser_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "lenic.proto",
-}
-
-const (
-	AuthService_Login_FullMethodName = "/lenic.AuthService/Login"
-)
-
-// AuthServiceClient is the client API for AuthService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type AuthServiceClient interface {
-	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-}
-
-type authServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
-	return &authServiceClient{cc}
-}
-
-func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(LoginResponse)
-	err := c.cc.Invoke(ctx, AuthService_Login_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// AuthServiceServer is the server API for AuthService service.
-// All implementations must embed UnimplementedAuthServiceServer
-// for forward compatibility.
-type AuthServiceServer interface {
-	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	mustEmbedUnimplementedAuthServiceServer()
-}
-
-// UnimplementedAuthServiceServer must be embedded to have
-// forward compatible implementations.
-//
-// NOTE: this should be embedded by value instead of pointer to avoid a nil
-// pointer dereference when methods are called.
-type UnimplementedAuthServiceServer struct{}
-
-func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
-}
-func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
-func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
-
-// UnsafeAuthServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to AuthServiceServer will
-// result in compilation errors.
-type UnsafeAuthServiceServer interface {
-	mustEmbedUnimplementedAuthServiceServer()
-}
-
-func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
-	// If the following call pancis, it indicates UnimplementedAuthServiceServer was
-	// embedded by pointer and is nil.  This will cause panics if an
-	// unimplemented method is ever invoked, so we test this at initialization
-	// time to prevent it from happening at runtime later due to I/O.
-	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
-		t.testEmbeddedByValue()
-	}
-	s.RegisterService(&AuthService_ServiceDesc, srv)
-}
-
-func _AuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoginRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuthServiceServer).Login(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AuthService_Login_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).Login(ctx, req.(*LoginRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var AuthService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "lenic.AuthService",
-	HandlerType: (*AuthServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Login",
-			Handler:    _AuthService_Login_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "lenic.proto",
-}
-
-const (
+	Lenic_Login_FullMethodName                = "/lenic.Lenic/Login"
+	Lenic_CreateUser_FullMethodName           = "/lenic.Lenic/CreateUser"
 	Lenic_ActivateUser_FullMethodName         = "/lenic.Lenic/ActivateUser"
 	Lenic_GetUser_FullMethodName              = "/lenic.Lenic/GetUser"
 	Lenic_SearchUsers_FullMethodName          = "/lenic.Lenic/SearchUsers"
@@ -260,14 +58,16 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LenicClient interface {
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	CreateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	ActivateUser(ctx context.Context, in *ActivateUserRequest, opts ...grpc.CallOption) (*ActivateUserResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
 	SearchUsers(ctx context.Context, in *SearchUsersRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
 	GetUserFollowers(ctx context.Context, in *GetUserFollowersRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
 	GetUserFollowing(ctx context.Context, in *GetUserFollowingRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
-	FollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*FollowUserResponse, error)
-	AcceptFollow(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*AcceptFollowResponse, error)
-	UnfollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*UnfollowUserResponse, error)
+	FollowUser(ctx context.Context, in *FollowUserRequest, opts ...grpc.CallOption) (*FollowUserResponse, error)
+	AcceptFollow(ctx context.Context, in *AcceptFollowRequest, opts ...grpc.CallOption) (*AcceptFollowResponse, error)
+	UnfollowUser(ctx context.Context, in *UnfollowRequest, opts ...grpc.CallOption) (*UnfollowUserResponse, error)
 	UpdateUserPass(ctx context.Context, in *User, opts ...grpc.CallOption) (*UpdateUserPassResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 	StartConversation(ctx context.Context, in *Conversation, opts ...grpc.CallOption) (*StartConversationResponse, error)
@@ -299,6 +99,26 @@ type lenicClient struct {
 
 func NewLenicClient(cc grpc.ClientConnInterface) LenicClient {
 	return &lenicClient{cc}
+}
+
+func (c *lenicClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, Lenic_Login_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *lenicClient) CreateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*CreateUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateUserResponse)
+	err := c.cc.Invoke(ctx, Lenic_CreateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *lenicClient) ActivateUser(ctx context.Context, in *ActivateUserRequest, opts ...grpc.CallOption) (*ActivateUserResponse, error) {
@@ -378,7 +198,7 @@ func (c *lenicClient) GetUserFollowing(ctx context.Context, in *GetUserFollowing
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Lenic_GetUserFollowingClient = grpc.ServerStreamingClient[User]
 
-func (c *lenicClient) FollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*FollowUserResponse, error) {
+func (c *lenicClient) FollowUser(ctx context.Context, in *FollowUserRequest, opts ...grpc.CallOption) (*FollowUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(FollowUserResponse)
 	err := c.cc.Invoke(ctx, Lenic_FollowUser_FullMethodName, in, out, cOpts...)
@@ -388,7 +208,7 @@ func (c *lenicClient) FollowUser(ctx context.Context, in *Follow, opts ...grpc.C
 	return out, nil
 }
 
-func (c *lenicClient) AcceptFollow(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*AcceptFollowResponse, error) {
+func (c *lenicClient) AcceptFollow(ctx context.Context, in *AcceptFollowRequest, opts ...grpc.CallOption) (*AcceptFollowResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AcceptFollowResponse)
 	err := c.cc.Invoke(ctx, Lenic_AcceptFollow_FullMethodName, in, out, cOpts...)
@@ -398,7 +218,7 @@ func (c *lenicClient) AcceptFollow(ctx context.Context, in *Follow, opts ...grpc
 	return out, nil
 }
 
-func (c *lenicClient) UnfollowUser(ctx context.Context, in *Follow, opts ...grpc.CallOption) (*UnfollowUserResponse, error) {
+func (c *lenicClient) UnfollowUser(ctx context.Context, in *UnfollowRequest, opts ...grpc.CallOption) (*UnfollowUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UnfollowUserResponse)
 	err := c.cc.Invoke(ctx, Lenic_UnfollowUser_FullMethodName, in, out, cOpts...)
@@ -696,14 +516,16 @@ func (c *lenicClient) DeleteComment(ctx context.Context, in *DeleteCommentReques
 // All implementations must embed UnimplementedLenicServer
 // for forward compatibility.
 type LenicServer interface {
+	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	CreateUser(context.Context, *User) (*CreateUserResponse, error)
 	ActivateUser(context.Context, *ActivateUserRequest) (*ActivateUserResponse, error)
 	GetUser(context.Context, *GetUserRequest) (*User, error)
 	SearchUsers(*SearchUsersRequest, grpc.ServerStreamingServer[User]) error
 	GetUserFollowers(*GetUserFollowersRequest, grpc.ServerStreamingServer[User]) error
 	GetUserFollowing(*GetUserFollowingRequest, grpc.ServerStreamingServer[User]) error
-	FollowUser(context.Context, *Follow) (*FollowUserResponse, error)
-	AcceptFollow(context.Context, *Follow) (*AcceptFollowResponse, error)
-	UnfollowUser(context.Context, *Follow) (*UnfollowUserResponse, error)
+	FollowUser(context.Context, *FollowUserRequest) (*FollowUserResponse, error)
+	AcceptFollow(context.Context, *AcceptFollowRequest) (*AcceptFollowResponse, error)
+	UnfollowUser(context.Context, *UnfollowRequest) (*UnfollowUserResponse, error)
 	UpdateUserPass(context.Context, *User) (*UpdateUserPassResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
 	StartConversation(context.Context, *Conversation) (*StartConversationResponse, error)
@@ -737,6 +559,12 @@ type LenicServer interface {
 // pointer dereference when methods are called.
 type UnimplementedLenicServer struct{}
 
+func (UnimplementedLenicServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedLenicServer) CreateUser(context.Context, *User) (*CreateUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
+}
 func (UnimplementedLenicServer) ActivateUser(context.Context, *ActivateUserRequest) (*ActivateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ActivateUser not implemented")
 }
@@ -752,13 +580,13 @@ func (UnimplementedLenicServer) GetUserFollowers(*GetUserFollowersRequest, grpc.
 func (UnimplementedLenicServer) GetUserFollowing(*GetUserFollowingRequest, grpc.ServerStreamingServer[User]) error {
 	return status.Errorf(codes.Unimplemented, "method GetUserFollowing not implemented")
 }
-func (UnimplementedLenicServer) FollowUser(context.Context, *Follow) (*FollowUserResponse, error) {
+func (UnimplementedLenicServer) FollowUser(context.Context, *FollowUserRequest) (*FollowUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FollowUser not implemented")
 }
-func (UnimplementedLenicServer) AcceptFollow(context.Context, *Follow) (*AcceptFollowResponse, error) {
+func (UnimplementedLenicServer) AcceptFollow(context.Context, *AcceptFollowRequest) (*AcceptFollowResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AcceptFollow not implemented")
 }
-func (UnimplementedLenicServer) UnfollowUser(context.Context, *Follow) (*UnfollowUserResponse, error) {
+func (UnimplementedLenicServer) UnfollowUser(context.Context, *UnfollowRequest) (*UnfollowUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnfollowUser not implemented")
 }
 func (UnimplementedLenicServer) UpdateUserPass(context.Context, *User) (*UpdateUserPassResponse, error) {
@@ -851,6 +679,42 @@ func RegisterLenicServer(s grpc.ServiceRegistrar, srv LenicServer) {
 	s.RegisterService(&Lenic_ServiceDesc, srv)
 }
 
+func _Lenic_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LenicServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Lenic_Login_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LenicServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Lenic_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(User)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LenicServer).CreateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Lenic_CreateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LenicServer).CreateUser(ctx, req.(*User))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Lenic_ActivateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ActivateUserRequest)
 	if err := dec(in); err != nil {
@@ -921,7 +785,7 @@ func _Lenic_GetUserFollowing_Handler(srv interface{}, stream grpc.ServerStream) 
 type Lenic_GetUserFollowingServer = grpc.ServerStreamingServer[User]
 
 func _Lenic_FollowUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Follow)
+	in := new(FollowUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -933,13 +797,13 @@ func _Lenic_FollowUser_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: Lenic_FollowUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).FollowUser(ctx, req.(*Follow))
+		return srv.(LenicServer).FollowUser(ctx, req.(*FollowUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Lenic_AcceptFollow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Follow)
+	in := new(AcceptFollowRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -951,13 +815,13 @@ func _Lenic_AcceptFollow_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: Lenic_AcceptFollow_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).AcceptFollow(ctx, req.(*Follow))
+		return srv.(LenicServer).AcceptFollow(ctx, req.(*AcceptFollowRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Lenic_UnfollowUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Follow)
+	in := new(UnfollowRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -969,7 +833,7 @@ func _Lenic_UnfollowUser_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: Lenic_UnfollowUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).UnfollowUser(ctx, req.(*Follow))
+		return srv.(LenicServer).UnfollowUser(ctx, req.(*UnfollowRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1353,6 +1217,14 @@ var Lenic_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "lenic.Lenic",
 	HandlerType: (*LenicServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Login",
+			Handler:    _Lenic_Login_Handler,
+		},
+		{
+			MethodName: "CreateUser",
+			Handler:    _Lenic_CreateUser_Handler,
+		},
 		{
 			MethodName: "ActivateUser",
 			Handler:    _Lenic_ActivateUser_Handler,

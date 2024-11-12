@@ -5,7 +5,9 @@ import (
 	"net"
 
 	"github.com/Anacardo89/lenic_api/config"
+	"github.com/Anacardo89/lenic_api/internal/data/orm"
 	"github.com/Anacardo89/lenic_api/internal/endpoints"
+	"github.com/Anacardo89/lenic_api/internal/interceptor"
 	"github.com/Anacardo89/lenic_api/internal/pb"
 	"github.com/Anacardo89/lenic_api/internal/server"
 	"github.com/Anacardo89/lenic_api/pkg/db"
@@ -26,6 +28,7 @@ func main() {
 	if err != nil {
 		logger.Error.Fatalln("Could not connect to DB: ", err)
 	}
+	orm.Da.Db = db.Dbase
 	logger.Info.Println("Connecting to DB OK")
 
 	// Server
@@ -35,11 +38,13 @@ func main() {
 	}
 	logger.Info.Println("Loading serverConfig OK")
 
-	opts := []grpc.ServerOption{}
+	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(interceptor.AuthUnaryInterceptor),
+		grpc.StreamInterceptor(interceptor.AuthStreamInterceptor),
+	}
 
 	s := grpc.NewServer(opts...)
 
-	pb.RegisterAuthServiceServer(s, &endpoints.AuthService{})
 	pb.RegisterLenicServer(s, &endpoints.ApiService{})
 
 	lis, err := net.Listen("tcp", ":"+server.Server.GrpcPort)
