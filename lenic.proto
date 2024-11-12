@@ -26,9 +26,9 @@ service Lenic {
   rpc SearchUsers(SearchUsersRequest) returns (stream User);
   rpc GetUserFollowers(GetUserFollowersRequest) returns (stream User);
   rpc GetUserFollowing(GetUserFollowingRequest) returns (stream User);
-  rpc FollowUser(Follow) returns (FollowUserResponse);
-  rpc AcceptFollow(Follow) returns (AcceptFollowResponse);
-  rpc UnfollowUser(Follow) returns (UnfollowUserResponse);
+  rpc FollowUser(FollowUserRequest) returns (FollowUserResponse);
+  rpc AcceptFollow(AcceptFollowRequest) returns (AcceptFollowResponse);
+  rpc UnfollowUser(UnfollowRequest) returns (UnfollowUserResponse);
   rpc UpdateUserPass(User) returns (UpdateUserPassResponse);
   rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
   rpc StartConversation(Conversation) returns (StartConversationResponse);
@@ -215,7 +215,17 @@ message User {
   int32 active = 10;
 }
 
-message Follow {
+message FollowUserRequest {
+  int32 follower_id = 1;
+  int32 followed_id = 2;
+}
+
+message AcceptFollowRequest {
+  int32 follower_id = 1;
+  int32 followed_id = 2;
+}
+
+message UnfollowRequest {
   int32 follower_id = 1;
   int32 followed_id = 2;
 }
