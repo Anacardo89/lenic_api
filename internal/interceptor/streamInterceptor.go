@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/Anacardo89/lenic_api/pkg/auth"
 	"google.golang.org/grpc"
@@ -63,13 +62,6 @@ func extractClaimsFromContext(ctx context.Context) (*auth.Claims, error) {
 	authHeaders, exists := md["authorization"]
 	if !exists || len(authHeaders) == 0 {
 		return nil, errors.New("authorization header not provided")
-	}
-
-	tokenString := authHeaders[0]
-	if strings.HasPrefix(tokenString, "Bearer ") {
-		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-	} else {
-		return nil, errors.New("invalid authorization header format")
 	}
 
 	token := extractToken(md)

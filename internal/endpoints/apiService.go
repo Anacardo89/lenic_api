@@ -2,11 +2,15 @@ package endpoints
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/Anacardo89/lenic_api/internal/data/model"
 	"github.com/Anacardo89/lenic_api/internal/data/orm"
 	"github.com/Anacardo89/lenic_api/internal/pb"
+	"github.com/Anacardo89/lenic_api/pkg/auth"
+	"github.com/Anacardo89/lenic_api/pkg/logger"
 	"github.com/google/uuid"
 )
 
@@ -18,9 +22,98 @@ type ApiService struct {
 	pb.UnimplementedLenicServer
 }
 
+func (s *ApiService) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
+	u, err := orm.Da.GetUserByName(in.Username)
+	if err != nil {
+		logger.Error.Println("could not get user: ", err)
+		return nil, fmt.Errorf("could not get user: %v", err)
+	}
+
+	if !auth.CheckPasswordHash(in.Password, u.HashPass) {
+		logger.Error.Println("invalid credentials")
+		return nil, errors.New("invalid credentials")
+	}
+
+	following, err := orm.Da.GetFollowing(u.Id)
+	if err != nil {
+		logger.Error.Println("could not get following: ", err)
+		return nil, fmt.Errorf("could not get following: %v", err)
+	}
+
+	var followers []string
+
+	for _, f := range *following {
+		user, err := orm.Da.GetUserByID(f.FollowedId)
+		if err != nil {
+			logger.Error.Println("could not get user following: ", err)
+			return nil, fmt.Errorf("could not get user following: %v", err)
+		}
+		followers = append(followers, user.UserName)
+	}
+
+	token, err := auth.GenerateJWT(in.Username, followers)
+	if err != nil {
+		logger.Error.Println("could not create token: ", err)
+		return nil, fmt.Errorf("could not create token: %v", err)
+	}
+
+	res := &pb.LoginResponse{
+		Token: token,
+	}
+
+	return res, nil
+}
+
+func (s *ApiService) CreateUser(ctx context.Context, in *pb.User) (*pb.CreateUserResponse, error) {
+
+	_, err := orm.Da.GetUserByName(in.Username)
+	if err != sql.ErrNoRows {
+		logger.Error.Println("user already exists")
+		return nil, errors.New("user already exists")
+	}
+
+	_, err = orm.Da.GetUserByEmail(in.Email)
+	if err != sql.ErrNoRows {
+		logger.Error.Println("email already exists")
+		return nil, errors.New("email already exists")
+	}
+
+	hashPass, err := auth.HashPassword(in.Pass)
+	if err != nil {
+		logger.Error.Println("could not hash password: ", err)
+		return nil, fmt.Errorf("could not hash password: %v", err)
+	}
+
+	u := &model.User{
+		UserName: string(in.Username),
+		Email:    string(in.Email),
+		HashPass: hashPass,
+		Active:   0,
+	}
+
+	res, err := orm.Da.CreateUser(u)
+	if err != nil {
+		logger.Error.Println("error creating user: ", err)
+		return nil, fmt.Errorf("error creating user: %v", err)
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		logger.Error.Println("error getting id: ", err)
+		return nil, fmt.Errorf("error getting id: %v", err)
+	}
+
+	resp := &pb.CreateUserResponse{
+		Id: int32(id),
+	}
+
+	return resp, nil
+}
+
 func (s *ApiService) ActivateUser(ctx context.Context, in *pb.ActivateUserRequest) (*pb.ActivateUserResponse, error) {
 	err := orm.Da.SetUserAsActive(in.Username)
 	if err != nil {
+		logger.Error.Println("could not activate user: ", err)
 		return nil, fmt.Errorf("could not activate user: %v", err)
 	}
 	res := &pb.ActivateUserResponse{
@@ -32,12 +125,12 @@ func (s *ApiService) ActivateUser(ctx context.Context, in *pb.ActivateUserReques
 func (s *ApiService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.User, error) {
 	u, err := orm.Da.GetUserByName(in.Username)
 	if err != nil {
+		logger.Error.Println("could not get user: ", err)
 		return nil, fmt.Errorf("could not get user: %v", err)
 	}
 	user := pb.User{
 		Id:            int32(u.Id),
 		Username:      u.UserName,
-		Email:         u.Email,
 		UserFollowers: int32(u.Followers),
 		UserFollowing: int32(u.Following),
 		CreatedAt:     u.CreatedAt.Format(layout),
@@ -50,13 +143,13 @@ func (s *ApiService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.Us
 func (s *ApiService) SearchUsers(in *pb.SearchUsersRequest, stream pb.Lenic_SearchUsersServer) error {
 	users, err := orm.Da.GetSearchUsers(in.Username)
 	if err != nil {
+		logger.Error.Println("could not get users: ", err)
 		return fmt.Errorf("could not get users: %v", err)
 	}
 	for _, u := range *users {
 		user := pb.User{
 			Id:            int32(u.Id),
 			Username:      u.UserName,
-			Email:         u.Email,
 			UserFollowers: int32(u.Followers),
 			UserFollowing: int32(u.Following),
 			CreatedAt:     u.CreatedAt.Format(layout),
@@ -65,6 +158,7 @@ func (s *ApiService) SearchUsers(in *pb.SearchUsersRequest, stream pb.Lenic_Sear
 		}
 		err := stream.Send(&user)
 		if err != nil {
+			logger.Error.Println("error sending message to stream:  ", err)
 			return fmt.Errorf("error sending message to stream: %v", err)
 		}
 	}
@@ -75,23 +169,25 @@ func (s *ApiService) GetUserFollowers(in *pb.GetUserFollowersRequest, stream pb.
 
 	user, err := orm.Da.GetUserByName(in.Username)
 	if err != nil {
+		logger.Error.Println("could not get user by name: ", err)
 		return fmt.Errorf("could not get user by name: %v", err)
 	}
 
 	follows, err := orm.Da.GetFollowers(user.Id)
 	if err != nil {
+		logger.Error.Println("could not get users: ", err)
 		return fmt.Errorf("could not get users: %v", err)
 	}
 
 	for _, f := range *follows {
 		u, err := orm.Da.GetUserByID(f.FollowerId)
 		if err != nil {
+			logger.Error.Println("could not get Id from follower: ", err)
 			return fmt.Errorf("could not get Id from follower: %v", err)
 		}
 		u_out := pb.User{
 			Id:            int32(u.Id),
 			Username:      u.UserName,
-			Email:         u.Email,
 			UserFollowers: int32(u.Followers),
 			UserFollowing: int32(u.Following),
 			CreatedAt:     u.CreatedAt.Format(layout),
@@ -100,6 +196,7 @@ func (s *ApiService) GetUserFollowers(in *pb.GetUserFollowersRequest, stream pb.
 		}
 		err = stream.Send(&u_out)
 		if err != nil {
+			logger.Error.Println("error sending message to stream: ", err)
 			return fmt.Errorf("error sending message to stream: %v", err)
 		}
 	}
@@ -110,23 +207,25 @@ func (s *ApiService) GetUserFollowing(in *pb.GetUserFollowingRequest, stream pb.
 
 	user, err := orm.Da.GetUserByName(in.Username)
 	if err != nil {
+		logger.Error.Println("could not get user by name: ", err)
 		return fmt.Errorf("could not get user by name: %v", err)
 	}
 
 	follows, err := orm.Da.GetFollowing(user.Id)
 	if err != nil {
+		logger.Error.Println("could not get users: ", err)
 		return fmt.Errorf("could not get users: %v", err)
 	}
 
 	for _, f := range *follows {
 		u, err := orm.Da.GetUserByID(f.FollowedId)
 		if err != nil {
+			logger.Error.Println("could not get Id from follower: ", err)
 			return fmt.Errorf("could not get Id from follower: %v", err)
 		}
 		u_out := pb.User{
 			Id:            int32(u.Id),
 			Username:      u.UserName,
-			Email:         u.Email,
 			UserFollowers: int32(u.Followers),
 			UserFollowing: int32(u.Following),
 			CreatedAt:     u.CreatedAt.Format(layout),
@@ -135,13 +234,14 @@ func (s *ApiService) GetUserFollowing(in *pb.GetUserFollowingRequest, stream pb.
 		}
 		err = stream.Send(&u_out)
 		if err != nil {
+			logger.Error.Println("error sending message to stream: ", err)
 			return fmt.Errorf("error sending message to stream: %v", err)
 		}
 	}
 	return nil
 }
 
-func (s *ApiService) FollowUser(ctx context.Context, in *pb.Follow) (*pb.FollowUserResponse, error) {
+func (s *ApiService) FollowUser(ctx context.Context, in *pb.FollowUserRequest) (*pb.FollowUserResponse, error) {
 
 	res := &pb.FollowUserResponse{
 		Response: "NOK",
@@ -149,6 +249,7 @@ func (s *ApiService) FollowUser(ctx context.Context, in *pb.Follow) (*pb.FollowU
 
 	_, err := orm.Da.FollowUser(int(in.FollowerId), int(in.FollowedId))
 	if err != nil {
+		logger.Error.Println("error following user: ", err)
 		return res, fmt.Errorf("error following user: %v", err)
 	}
 
@@ -157,7 +258,7 @@ func (s *ApiService) FollowUser(ctx context.Context, in *pb.Follow) (*pb.FollowU
 	return res, nil
 }
 
-func (s *ApiService) AcceptFollow(ctx context.Context, in *pb.Follow) (*pb.AcceptFollowResponse, error) {
+func (s *ApiService) AcceptFollow(ctx context.Context, in *pb.AcceptFollowRequest) (*pb.AcceptFollowResponse, error) {
 
 	res := &pb.AcceptFollowResponse{
 		Response: "NOK",
@@ -165,6 +266,7 @@ func (s *ApiService) AcceptFollow(ctx context.Context, in *pb.Follow) (*pb.Accep
 
 	err := orm.Da.AcceptFollow(int(in.FollowerId), int(in.FollowedId))
 	if err != nil {
+		logger.Error.Println("error accepting follow: ", err)
 		return res, fmt.Errorf("error accepting follow: %v", err)
 	}
 
@@ -173,7 +275,7 @@ func (s *ApiService) AcceptFollow(ctx context.Context, in *pb.Follow) (*pb.Accep
 	return res, nil
 }
 
-func (s *ApiService) UnfollowUser(ctx context.Context, in *pb.Follow) (*pb.UnfollowUserResponse, error) {
+func (s *ApiService) UnfollowUser(ctx context.Context, in *pb.UnfollowRequest) (*pb.UnfollowUserResponse, error) {
 
 	res := &pb.UnfollowUserResponse{
 		Response: "NOK",
@@ -181,6 +283,7 @@ func (s *ApiService) UnfollowUser(ctx context.Context, in *pb.Follow) (*pb.Unfol
 
 	err := orm.Da.UnfollowUser(int(in.FollowerId), int(in.FollowedId))
 	if err != nil {
+		logger.Error.Println("error unfollowing: ", err)
 		return res, fmt.Errorf("error unfollowing: %v", err)
 	}
 
@@ -197,6 +300,7 @@ func (s *ApiService) UpdateUserPass(ctx context.Context, in *pb.User) (*pb.Updat
 
 	err := orm.Da.SetNewPassword(in.Username, in.Pass)
 	if err != nil {
+		logger.Error.Println("could not update password: ", err)
 		return res, fmt.Errorf("could not update password: %v", err)
 	}
 
@@ -213,6 +317,7 @@ func (s *ApiService) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (
 
 	err := orm.Da.DeleteUser(in.Username)
 	if err != nil {
+		logger.Error.Println("could not delete user: ", err)
 		return res, fmt.Errorf("could not delete user: %v", err)
 	}
 
@@ -230,11 +335,13 @@ func (s *ApiService) StartConversation(ctx context.Context, in *pb.Conversation)
 
 	res, err := orm.Da.CreateConversation(&c)
 	if err != nil {
+		logger.Error.Println("could not create conversation: ", err)
 		return nil, fmt.Errorf("could not create conversation: %v", err)
 	}
 
 	id64, err := res.LastInsertId()
 	if err != nil {
+		logger.Error.Println("could not get get conversation id: ", err)
 		return nil, fmt.Errorf("could not get conversation id: %v", err)
 	}
 
@@ -246,6 +353,8 @@ func (s *ApiService) StartConversation(ctx context.Context, in *pb.Conversation)
 
 	return resp, nil
 }
+
+// NEEDS LOGGING
 
 func (s *ApiService) GetUserConversations(in *pb.GetUserConversationsRequest, stream pb.Lenic_GetUserConversationsServer) error {
 
