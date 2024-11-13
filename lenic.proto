@@ -6,7 +6,6 @@ option go_package = "github.com/anacardo89/lenic_api/internal/pb";
 service Lenic {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc CreateUser(User) returns (CreateUserResponse);
-  rpc ActivateUser(ActivateUserRequest) returns (ActivateUserResponse);
   rpc GetUser(GetUserRequest) returns (User);
   rpc SearchUsers(SearchUsersRequest) returns (stream User);
   rpc GetUserFollowers(GetUserFollowersRequest) returns (stream User);
@@ -69,14 +68,6 @@ message User {
 
 message CreateUserResponse {
   int32 id = 1;
-}
-
-message ActivateUserRequest {
-  string username = 1;
-}
-
-message ActivateUserResponse {
-  string response = 1;
 }
 
 message GetUserRequest {

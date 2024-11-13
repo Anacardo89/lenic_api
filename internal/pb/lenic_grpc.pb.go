@@ -21,7 +21,6 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Lenic_Login_FullMethodName                = "/lenic.Lenic/Login"
 	Lenic_CreateUser_FullMethodName           = "/lenic.Lenic/CreateUser"
-	Lenic_ActivateUser_FullMethodName         = "/lenic.Lenic/ActivateUser"
 	Lenic_GetUser_FullMethodName              = "/lenic.Lenic/GetUser"
 	Lenic_SearchUsers_FullMethodName          = "/lenic.Lenic/SearchUsers"
 	Lenic_GetUserFollowers_FullMethodName     = "/lenic.Lenic/GetUserFollowers"
@@ -60,7 +59,6 @@ const (
 type LenicClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	CreateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*CreateUserResponse, error)
-	ActivateUser(ctx context.Context, in *ActivateUserRequest, opts ...grpc.CallOption) (*ActivateUserResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
 	SearchUsers(ctx context.Context, in *SearchUsersRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
 	GetUserFollowers(ctx context.Context, in *GetUserFollowersRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
@@ -115,16 +113,6 @@ func (c *lenicClient) CreateUser(ctx context.Context, in *User, opts ...grpc.Cal
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateUserResponse)
 	err := c.cc.Invoke(ctx, Lenic_CreateUser_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *lenicClient) ActivateUser(ctx context.Context, in *ActivateUserRequest, opts ...grpc.CallOption) (*ActivateUserResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ActivateUserResponse)
-	err := c.cc.Invoke(ctx, Lenic_ActivateUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -518,7 +506,6 @@ func (c *lenicClient) DeleteComment(ctx context.Context, in *DeleteCommentReques
 type LenicServer interface {
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	CreateUser(context.Context, *User) (*CreateUserResponse, error)
-	ActivateUser(context.Context, *ActivateUserRequest) (*ActivateUserResponse, error)
 	GetUser(context.Context, *GetUserRequest) (*User, error)
 	SearchUsers(*SearchUsersRequest, grpc.ServerStreamingServer[User]) error
 	GetUserFollowers(*GetUserFollowersRequest, grpc.ServerStreamingServer[User]) error
@@ -564,9 +551,6 @@ func (UnimplementedLenicServer) Login(context.Context, *LoginRequest) (*LoginRes
 }
 func (UnimplementedLenicServer) CreateUser(context.Context, *User) (*CreateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
-}
-func (UnimplementedLenicServer) ActivateUser(context.Context, *ActivateUserRequest) (*ActivateUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ActivateUser not implemented")
 }
 func (UnimplementedLenicServer) GetUser(context.Context, *GetUserRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
@@ -711,24 +695,6 @@ func _Lenic_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(LenicServer).CreateUser(ctx, req.(*User))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Lenic_ActivateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ActivateUserRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LenicServer).ActivateUser(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Lenic_ActivateUser_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LenicServer).ActivateUser(ctx, req.(*ActivateUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1224,10 +1190,6 @@ var Lenic_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateUser",
 			Handler:    _Lenic_CreateUser_Handler,
-		},
-		{
-			MethodName: "ActivateUser",
-			Handler:    _Lenic_ActivateUser_Handler,
 		},
 		{
 			MethodName: "GetUser",

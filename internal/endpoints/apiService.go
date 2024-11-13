@@ -110,18 +110,6 @@ func (s *ApiService) CreateUser(ctx context.Context, in *pb.User) (*pb.CreateUse
 	return resp, nil
 }
 
-func (s *ApiService) ActivateUser(ctx context.Context, in *pb.ActivateUserRequest) (*pb.ActivateUserResponse, error) {
-	err := orm.Da.SetUserAsActive(in.Username)
-	if err != nil {
-		logger.Error.Println("could not activate user: ", err)
-		return nil, fmt.Errorf("could not activate user: %v", err)
-	}
-	res := &pb.ActivateUserResponse{
-		Response: in.Username,
-	}
-	return res, nil
-}
-
 func (s *ApiService) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.User, error) {
 	u, err := orm.Da.GetUserByName(in.Username)
 	if err != nil {
