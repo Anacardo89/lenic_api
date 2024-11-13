@@ -296,8 +296,6 @@ func isUserOnlyAccess(method string) bool {
 
 func isSelfRequest(username string, request interface{}) bool {
 	switch req := request.(type) {
-	case *pb.ActivateUserRequest:
-		return req.Username == username
 	case *pb.User:
 		return req.Username == username
 	case *pb.DeleteUserRequest:
@@ -404,6 +402,62 @@ func isSelfRequest(username string, request interface{}) bool {
 		return u.UserName == username
 	case *pb.DeleteCommentRequest:
 		c, err := orm.Da.GetCommentById(int(req.Id))
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(c.AuthorId)
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
+	case *pb.GetUserPostsRequest:
+		return req.Username == username
+	case *pb.GetPostRequest:
+		p, err := orm.Da.GetPostByGUID(req.Uuid)
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
+	case *pb.GetCommentRequest:
+		c, err := orm.Da.GetCommentById(int(req.Id))
+		if err != nil {
+			return false
+		}
+		p, err := orm.Da.GetPostByGUID(c.PostGUID)
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
+	case *pb.GetCommentsFromPostRequest:
+		p, err := orm.Da.GetPostByGUID(req.Uuid)
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
+	case *pb.PostRating:
+		p, err := orm.Da.GetPostByID(int(req.PostId))
+		if err != nil {
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			return false
+		}
+		return u.UserName == username
+	case *pb.CommentRating:
+		c, err := orm.Da.GetCommentById(int(req.CommentId))
 		if err != nil {
 			return false
 		}
