@@ -313,7 +313,7 @@ func isSelfRequest(username string, request interface{}) bool {
 		}
 		return u.UserName == username
 	case *pb.UnfollowRequest:
-		u, err := orm.Da.GetUserByID(int(req.FollowedId))
+		u, err := orm.Da.GetUserByID(int(req.FollowerId))
 		if err != nil {
 			return false
 		}
@@ -329,8 +329,6 @@ func isSelfRequest(username string, request interface{}) bool {
 		}
 		return u1.UserName == username || u2.UserName == username
 	case *pb.GetUserConversationsRequest:
-		logger.Debug.Println(req.Username)
-		logger.Debug.Println(username)
 		return req.Username == username
 	case *pb.ReadConversationRequest:
 		c, err := orm.Da.GetConversationById(int(req.Id))
@@ -341,25 +339,17 @@ func isSelfRequest(username string, request interface{}) bool {
 		if err != nil {
 			return false
 		}
-		u2, err := orm.Da.GetUserByID(int(c.User1Id))
+		u2, err := orm.Da.GetUserByID(int(c.User2Id))
 		if err != nil {
 			return false
 		}
 		return u1.UserName == username || u2.UserName == username
 	case *pb.DM:
-		c, err := orm.Da.GetConversationById(int(req.Id))
+		u, err := orm.Da.GetUserByID(int(req.SenderId))
 		if err != nil {
 			return false
 		}
-		u1, err := orm.Da.GetUserByID(int(c.User1Id))
-		if err != nil {
-			return false
-		}
-		u2, err := orm.Da.GetUserByID(int(c.User1Id))
-		if err != nil {
-			return false
-		}
-		return u1.UserName == username || u2.UserName == username
+		return u.UserName == username
 	case *pb.GetConversationDMsRequest:
 		c, err := orm.Da.GetConversationById(int(req.Id))
 		if err != nil {
@@ -369,7 +359,7 @@ func isSelfRequest(username string, request interface{}) bool {
 		if err != nil {
 			return false
 		}
-		u2, err := orm.Da.GetUserByID(int(c.User1Id))
+		u2, err := orm.Da.GetUserByID(int(c.User2Id))
 		if err != nil {
 			return false
 		}

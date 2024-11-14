@@ -88,7 +88,7 @@ func (s *ApiService) CreateUser(ctx context.Context, in *pb.User) (*pb.CreateUse
 		UserName: string(in.Username),
 		Email:    string(in.Email),
 		HashPass: hashPass,
-		Active:   0,
+		Active:   1,
 	}
 
 	res, err := orm.Da.CreateUser(u)
