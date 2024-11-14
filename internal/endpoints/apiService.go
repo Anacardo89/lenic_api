@@ -286,7 +286,13 @@ func (s *ApiService) UpdateUserPass(ctx context.Context, in *pb.User) (*pb.Updat
 		Response: "NOK",
 	}
 
-	err := orm.Da.SetNewPassword(in.Username, in.Pass)
+	hash, err := auth.HashPassword(in.Pass)
+	if err != nil {
+		logger.Error.Println("could not hash password: ", err)
+		return res, fmt.Errorf("could not hash password: %v", err)
+	}
+
+	err = orm.Da.SetNewPassword(in.Username, hash)
 	if err != nil {
 		logger.Error.Println("could not update password: ", err)
 		return res, fmt.Errorf("could not update password: %v", err)
