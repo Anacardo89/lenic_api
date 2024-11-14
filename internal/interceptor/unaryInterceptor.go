@@ -329,6 +329,8 @@ func isSelfRequest(username string, request interface{}) bool {
 		}
 		return u1.UserName == username || u2.UserName == username
 	case *pb.GetUserConversationsRequest:
+		logger.Debug.Println(req.Username)
+		logger.Debug.Println(username)
 		return req.Username == username
 	case *pb.ReadConversationRequest:
 		c, err := orm.Da.GetConversationById(int(req.Id))
