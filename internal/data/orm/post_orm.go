@@ -248,7 +248,7 @@ func (da *DataAccess) GetPostByID(id int) (*model.Post, error) {
 		updatedAt []byte
 	)
 	p := model.Post{}
-	row := da.Db.QueryRow(query.SelectPostByGUID, id)
+	row := da.Db.QueryRow(query.SelectPostByID, id)
 	err := row.Scan(
 		&p.Id,
 		&p.GUID,

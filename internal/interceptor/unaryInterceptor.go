@@ -227,8 +227,11 @@ func getUUIDFromRequest(request interface{}) string {
 	case *pb.GetCommentsFromPostRequest:
 		return req.Uuid
 	case *pb.PostRating:
+		logger.Debug.Println(req.PostId)
+		logger.Debug.Println(int(req.PostId))
 		p, err := orm.Da.GetPostByID(int(req.PostId))
 		if err != nil {
+			logger.Error.Println("could not get post from id: ", err)
 			return ""
 		}
 		return p.GUID
@@ -244,8 +247,10 @@ func getUUIDFromRequest(request interface{}) string {
 }
 
 func getIsPublic(uuid string) bool {
+	logger.Debug.Println("UUID: ", uuid)
 	p, err := orm.Da.GetPostByGUID(uuid)
 	if err != nil {
+		logger.Error.Println("could not get post by UUID", err)
 		return false
 	}
 	return p.IsPublic
@@ -365,24 +370,6 @@ func isSelfRequest(username string, request interface{}) bool {
 		}
 		return u1.UserName == username || u2.UserName == username
 	case *pb.Post:
-		u, err := orm.Da.GetUserByID(int(req.AuthorId))
-		if err != nil {
-			return false
-		}
-		return u.UserName == username
-	case *pb.DeletePostRequest:
-		p, err := orm.Da.GetPostByGUID(req.Uuid)
-		if err != nil {
-			return false
-		}
-		u, err := orm.Da.GetUserByID(p.AuthorId)
-		if err != nil {
-			return false
-		}
-		return u.UserName == username
-	case *pb.GetFeedRequest:
-		return req.Username == username
-	case *pb.Comment:
 		p, err := orm.Da.GetPostByGUID(req.PostGuid)
 		if err != nil {
 			return false
@@ -392,6 +379,43 @@ func isSelfRequest(username string, request interface{}) bool {
 			return false
 		}
 		return u.UserName == username
+	case *pb.DeletePostRequest:
+		p, err := orm.Da.GetPostByGUID(req.Uuid)
+		if err != nil {
+			logger.Error.Println("could not get post: ", err)
+			return false
+		}
+		u, err := orm.Da.GetUserByID(p.AuthorId)
+		if err != nil {
+			logger.Error.Println("could not get user: ", err)
+			return false
+		}
+		return u.UserName == username
+	case *pb.GetFeedRequest:
+		return req.Username == username
+	case *pb.Comment:
+		if req.Id > 0 {
+			c, err := orm.Da.GetCommentById(int(req.Id))
+			if err != nil {
+				return false
+			}
+			u, err := orm.Da.GetUserByID(c.AuthorId)
+			if err != nil {
+				return false
+			}
+			return u.UserName == username
+
+		} else {
+			p, err := orm.Da.GetPostByGUID(req.PostGuid)
+			if err != nil {
+				return false
+			}
+			u, err := orm.Da.GetUserByID(p.AuthorId)
+			if err != nil {
+				return false
+			}
+			return u.UserName == username
+		}
 	case *pb.DeleteCommentRequest:
 		c, err := orm.Da.GetCommentById(int(req.Id))
 		if err != nil {
