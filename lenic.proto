@@ -5,6 +5,7 @@ option go_package = "github.com/anacardo89/lenic_api/internal/pb";
 
 service Lenic {
   rpc Login(LoginRequest) returns (LoginResponse);
+  // CreateUser message User{2, 3, 4}
   rpc CreateUser(User) returns (CreateUserResponse);
   rpc GetUser(GetUserRequest) returns (User);
   rpc SearchUsers(SearchUsersRequest) returns (stream User);
@@ -13,13 +14,17 @@ service Lenic {
   rpc FollowUser(FollowUserRequest) returns (FollowUserResponse);
   rpc AcceptFollow(AcceptFollowRequest) returns (AcceptFollowResponse);
   rpc UnfollowUser(UnfollowRequest) returns (UnfollowUserResponse);
+  // UpdateUserPass message User{2, 4}
   rpc UpdateUserPass(User) returns (UpdateUserPassResponse);
   rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  // StartConversation message Conversation{2, 3}
   rpc StartConversation(Conversation) returns (StartConversationResponse);
   rpc GetUserConversations(GetUserConversationsRequest) returns (stream Conversation);
   rpc ReadConversation(ReadConversationRequest) returns (ReadConversationResponse);
+  // SendDM message DM{2, 3, 4}
   rpc SendDM(DM) returns (SendDMResponse);
   rpc GetConversationDMs(GetConversationDMsRequest) returns (stream DM);
+  // CreatePost message Post{3, 4, 5, 8}
   rpc CreatePost(Post) returns (CreatePostResponse);
   rpc GetPost(GetPostRequest) returns (Post);
   rpc GetUserPosts(GetUserPostsRequest) returns (stream Post);
@@ -27,13 +32,16 @@ service Lenic {
   rpc GetFeed(GetFeedRequest) returns (stream Post);
   rpc RatePostUp(PostRating) returns (RatePostUpResponse);
   rpc RatePostDown(PostRating) returns (RatePostDownResponse);
+  // UpdatePost message Post{2, 4, 5, 8}
   rpc UpdatePost(Post) returns (UpdatePostResponse);
   rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
+  // CreateComment message Comment{2, 3, 4}
   rpc CreateComment(Comment) returns (CreateCommentResponse);
   rpc GetComment(GetCommentRequest) returns (Comment);
   rpc GetCommentsFromPost(GetCommentsFromPostRequest) returns (stream Comment);
   rpc RateCommentUp(CommentRating) returns (RateCommentUpResponse);
   rpc RateCommentDown(CommentRating) returns (RateCommentDownResponse);
+  // UpdateComment message Comment{1, 4}
   rpc UpdateComment(Comment) returns (UpdateCommentResponse);
   rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
 }
@@ -52,7 +60,6 @@ message LoginResponse {
 
 
 // User
-
 message User {
   int32 id = 1;
   string username = 2;

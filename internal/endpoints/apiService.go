@@ -691,7 +691,7 @@ func (s *ApiService) CreateComment(ctx context.Context, in *pb.Comment) (*pb.Cre
 		PostGUID: in.PostGuid,
 		AuthorId: int(in.AuthorId),
 		Content:  in.Content,
-		Rating:   int(in.Rating),
+		Rating:   0,
 		Active:   1,
 	}
 
