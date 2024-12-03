@@ -3,8 +3,10 @@ package endpoints
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/Anacardo89/lenic_api/internal/data/model"
 	"github.com/Anacardo89/lenic_api/internal/data/orm"
@@ -241,6 +243,29 @@ func (s *ApiService) FollowUser(ctx context.Context, in *pb.FollowUserRequest) (
 		return res, fmt.Errorf("error following user: %v", err)
 	}
 
+	dbuser, err := orm.Da.GetUserByID(int(in.FollowerId))
+	if err != nil {
+		logger.Error.Println("error get user from db: ", err)
+		return res, fmt.Errorf("error get user from db: %v", err)
+	}
+
+	encoded := base64.URLEncoding.EncodeToString([]byte(dbuser.UserName))
+
+	notif := model.Notification{
+		UserID:     int(in.FollowedId),
+		FromUserId: int(in.FollowerId),
+		NotifType:  "follow_request",
+		NotifMsg:   " has requested to follow you.",
+		ResourceId: encoded,
+		ParentId:   "",
+	}
+
+	_, err = orm.Da.CreateNotification(&notif)
+	if err != nil {
+		logger.Error.Println("error creating notif: ", err)
+		return res, fmt.Errorf("error creating notif: %v", err)
+	}
+
 	res.Response = "OK"
 
 	return res, nil
@@ -258,6 +283,29 @@ func (s *ApiService) AcceptFollow(ctx context.Context, in *pb.AcceptFollowReques
 		return res, fmt.Errorf("error accepting follow: %v", err)
 	}
 
+	dbuser, err := orm.Da.GetUserByID(int(in.FollowerId))
+	if err != nil {
+		logger.Error.Println("error get user from db: ", err)
+		return res, fmt.Errorf("error get user from db: %v", err)
+	}
+
+	encoded := base64.URLEncoding.EncodeToString([]byte(dbuser.UserName))
+
+	notif := model.Notification{
+		UserID:     int(in.FollowerId),
+		FromUserId: int(in.FollowedId),
+		NotifType:  "follow_accept",
+		NotifMsg:   " has accepted your follow request.",
+		ResourceId: encoded,
+		ParentId:   "",
+	}
+
+	_, err = orm.Da.CreateNotification(&notif)
+	if err != nil {
+		logger.Error.Println("error creating notif: ", err)
+		return res, fmt.Errorf("error creating notif: %v", err)
+	}
+
 	res.Response = "OK"
 
 	return res, nil
@@ -273,6 +321,18 @@ func (s *ApiService) UnfollowUser(ctx context.Context, in *pb.UnfollowRequest) (
 	if err != nil {
 		logger.Error.Println("error unfollowing: ", err)
 		return res, fmt.Errorf("error unfollowing: %v", err)
+	}
+
+	notif, err := orm.Da.GetFollowNotification(int(in.FollowedId), int(in.FollowerId))
+	if err != nil {
+		logger.Error.Println("error get notif: ", err)
+		return res, fmt.Errorf("error get notif: %v", err)
+	}
+
+	err = orm.Da.DeleteNotificationByID(notif.Id)
+	if err != nil {
+		logger.Error.Println("error delete notif: ", err)
+		return res, fmt.Errorf("error delete notif: %v", err)
 	}
 
 	res.Response = "OK"
@@ -417,7 +477,34 @@ func (s *ApiService) SendDM(ctx context.Context, in *pb.DM) (*pb.SendDMResponse,
 
 	id64, err := res.LastInsertId()
 	if err != nil {
-		return nil, fmt.Errorf("could not get conversation id: %v", err)
+		return nil, fmt.Errorf("could not get dm id: %v", err)
+	}
+
+	conv, err := orm.Da.GetConversationById(int(in.ConversationId))
+	if err != nil {
+		return nil, fmt.Errorf("could not get conversation: %v", err)
+	}
+
+	userid := conv.User1Id
+	if userid == int(in.SenderId) {
+		userid = conv.User2Id
+	}
+
+	convo_id := strconv.Itoa(conv.Id)
+
+	notif := model.Notification{
+		UserID:     userid,
+		FromUserId: int(in.SenderId),
+		NotifType:  "dm",
+		NotifMsg:   " sent you a message.",
+		ResourceId: convo_id,
+		ParentId:   "",
+	}
+
+	_, err = orm.Da.CreateNotification(&notif)
+	if err != nil {
+		logger.Error.Println("error creating notif: ", err)
+		return nil, fmt.Errorf("error creating notif: %v", err)
 	}
 
 	id := int32(id64)
@@ -625,6 +712,27 @@ func (s *ApiService) RatePostUp(ctx context.Context, in *pb.PostRating) (*pb.Rat
 		return res, fmt.Errorf("could not rate post up: %v", err)
 	}
 
+	post, err := orm.Da.GetPostByID(int(in.PostId))
+	if err != nil {
+		logger.Error.Println("error get post: ", err)
+		return nil, fmt.Errorf("error get post: %v", err)
+	}
+
+	notif := model.Notification{
+		UserID:     post.AuthorId,
+		FromUserId: int(in.UserId),
+		NotifType:  "rate_post",
+		NotifMsg:   " has rated your post.",
+		ResourceId: post.GUID,
+		ParentId:   "",
+	}
+
+	_, err = orm.Da.CreateNotification(&notif)
+	if err != nil {
+		logger.Error.Println("error creating notif: ", err)
+		return nil, fmt.Errorf("error creating notif: %v", err)
+	}
+
 	res.Response = "OK"
 
 	return res, nil
@@ -639,6 +747,27 @@ func (s *ApiService) RatePostDown(ctx context.Context, in *pb.PostRating) (*pb.R
 	err := orm.Da.RatePostDown(int(in.PostId), int(in.UserId))
 	if err != nil {
 		return res, fmt.Errorf("could not rate post down: %v", err)
+	}
+
+	post, err := orm.Da.GetPostByID(int(in.PostId))
+	if err != nil {
+		logger.Error.Println("error get post: ", err)
+		return nil, fmt.Errorf("error get post: %v", err)
+	}
+
+	notif := model.Notification{
+		UserID:     post.AuthorId,
+		FromUserId: int(in.UserId),
+		NotifType:  "rate_post",
+		NotifMsg:   " has rated your post.",
+		ResourceId: post.GUID,
+		ParentId:   "",
+	}
+
+	_, err = orm.Da.CreateNotification(&notif)
+	if err != nil {
+		logger.Error.Println("error creating notif: ", err)
+		return nil, fmt.Errorf("error creating notif: %v", err)
 	}
 
 	res.Response = "OK"
@@ -703,6 +832,29 @@ func (s *ApiService) CreateComment(ctx context.Context, in *pb.Comment) (*pb.Cre
 	id64, err := res.LastInsertId()
 	if err != nil {
 		return nil, fmt.Errorf("could not get conversation id: %v", err)
+	}
+
+	post, err := orm.Da.GetPostByGUID(in.PostGuid)
+	if err != nil {
+		logger.Error.Println("error get post: ", err)
+		return nil, fmt.Errorf("error get post: %v", err)
+	}
+
+	commentid := strconv.Itoa(int(id64))
+
+	notif := model.Notification{
+		UserID:     post.AuthorId,
+		FromUserId: int(in.AuthorId),
+		NotifType:  "comment_on_post",
+		NotifMsg:   " has commented on your post",
+		ResourceId: commentid,
+		ParentId:   post.GUID,
+	}
+
+	_, err = orm.Da.CreateNotification(&notif)
+	if err != nil {
+		logger.Error.Println("error creating notif: ", err)
+		return nil, fmt.Errorf("error creating notif: %v", err)
 	}
 
 	id := int32(id64)
@@ -778,6 +930,29 @@ func (s *ApiService) RateCommentUp(ctx context.Context, in *pb.CommentRating) (*
 		return res, fmt.Errorf("could not rate comment up: %v", err)
 	}
 
+	comment, err := orm.Da.GetCommentById(int(in.CommentId))
+	if err != nil {
+		logger.Error.Println("error get comment: ", err)
+		return nil, fmt.Errorf("error get comment: %v", err)
+	}
+
+	commentid := strconv.Itoa(comment.Id)
+
+	notif := model.Notification{
+		UserID:     comment.AuthorId,
+		FromUserId: int(in.UserId),
+		NotifType:  "rate_comment",
+		NotifMsg:   " has rated your comment.",
+		ResourceId: commentid,
+		ParentId:   comment.PostGUID,
+	}
+
+	_, err = orm.Da.CreateNotification(&notif)
+	if err != nil {
+		logger.Error.Println("error creating notif: ", err)
+		return nil, fmt.Errorf("error creating notif: %v", err)
+	}
+
 	res.Response = "OK"
 
 	return res, nil
@@ -792,6 +967,29 @@ func (s *ApiService) RateCommentDown(ctx context.Context, in *pb.CommentRating) 
 	err := orm.Da.RateCommentDown(int(in.CommentId), int(in.UserId))
 	if err != nil {
 		return res, fmt.Errorf("could not rate comment down: %v", err)
+	}
+
+	comment, err := orm.Da.GetCommentById(int(in.CommentId))
+	if err != nil {
+		logger.Error.Println("error get comment: ", err)
+		return nil, fmt.Errorf("error get comment: %v", err)
+	}
+
+	commentid := strconv.Itoa(comment.Id)
+
+	notif := model.Notification{
+		UserID:     comment.AuthorId,
+		FromUserId: int(in.UserId),
+		NotifType:  "rate_comment",
+		NotifMsg:   " has rated your comment.",
+		ResourceId: commentid,
+		ParentId:   comment.PostGUID,
+	}
+
+	_, err = orm.Da.CreateNotification(&notif)
+	if err != nil {
+		logger.Error.Println("error creating notif: ", err)
+		return nil, fmt.Errorf("error creating notif: %v", err)
 	}
 
 	res.Response = "OK"
