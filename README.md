@@ -1,6 +1,7 @@
 # lenic_api
 
 A gRPC API for [lenic](https://github.com/Anacardo89/lenic)
+- it brings most functionality from the social network to a gRPC API you can interact with via Postman
 
 ## Setup:
 - install [go](https://go.dev/doc/install)
