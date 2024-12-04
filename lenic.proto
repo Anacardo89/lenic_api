@@ -48,7 +48,6 @@ service Lenic {
 
 
 // Login
-
 message LoginRequest {
   string username = 1;
   string password = 2;
@@ -94,6 +93,7 @@ message GetUserFollowingRequest {
 }
 
 message UpdateUserPassResponse {
+  // OK/NOK
   string response = 1;
 }
 
@@ -102,18 +102,19 @@ message DeleteUserRequest {
 }
 
 message DeleteUserResponse {
+  // OK/NOK
   string response = 1;
 }
 
 
 // Follow
-
 message FollowUserRequest {
   int32 follower_id = 1;
   int32 followed_id = 2;
 }
 
 message FollowUserResponse {
+  // OK/NOK
   string response = 1;
 }
 
@@ -123,6 +124,7 @@ message AcceptFollowRequest {
 }
 
 message AcceptFollowResponse {
+  // OK/NOK
   string response = 1;
 }
 
@@ -132,12 +134,12 @@ message UnfollowRequest {
 }
 
 message UnfollowUserResponse {
+  // OK/NOK
   string response = 1;
 }
 
 
 // Conversation
-
 message Conversation {
   int32 id = 1;
   int32 user1_id = 2;
@@ -159,12 +161,12 @@ message ReadConversationRequest {
 }
 
 message ReadConversationResponse {
+  // OK/NOK
   string response = 1;
 }
 
 
 // DMs
-
 message DM {
   int32 id = 1;
   int32 conversation_id = 2;
@@ -184,7 +186,6 @@ message GetConversationDMsRequest {
 
 
 // Post
-
 message Post {
   int32 id = 1;
   string post_guid = 2;
@@ -219,6 +220,7 @@ message GetFeedRequest {
 }
 
 message UpdatePostResponse {
+  // OK/NOK
   string response = 1;
 }
 
@@ -227,27 +229,28 @@ message DeletePostRequest {
 }
 
 message DeletePostResponse {
+  // OK/NOK
   string response = 1;
 }
 
 
 // Post Rating
-
 message PostRating {
   int32 post_id = 1;
   int32 user_id = 2;
 }
 
 message RatePostUpResponse {
+  // OK/NOK
   string response = 1;
 }
 
 message RatePostDownResponse {
+  // OK/NOK
   string response = 1;
 }
 
 // Comment
-
 message Comment {
   int32 id = 1;
   string post_guid = 2;
@@ -272,6 +275,7 @@ message GetCommentsFromPostRequest {
 }
 
 message UpdateCommentResponse {
+  // OK/NOK
   string response = 1;
 }
 
@@ -280,20 +284,22 @@ message DeleteCommentRequest {
 }
 
 message DeleteCommentResponse {
+  // OK/NOK
   string response = 1;
 }
 
 // Comment Rating
-
 message CommentRating {
   int32 comment_id = 1;
   int32 user_id = 2;
 }
 
 message RateCommentUpResponse {
+  // OK/NOK
   string response = 1;
 }
 
 message RateCommentDownResponse {
+  // OK/NOK
   string response = 1;
 }
