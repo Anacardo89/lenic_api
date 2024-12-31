@@ -33,7 +33,7 @@ func CreateLogger() error {
 	Debug = log.New(debugFile, "DEBUG:", log.Ldate|log.Ltime|log.Lshortfile)
 	Error = log.New(errorFile, "ERROR:", log.Ldate|log.Ltime|log.Lshortfile)
 	Info = log.New(infoFile, "INFO:", log.Ldate|log.Ltime|log.Lshortfile)
-	Warn = log.New(warnFile, "INFO:", log.Ldate|log.Ltime|log.Lshortfile)
+	Warn = log.New(warnFile, "WARN:", log.Ldate|log.Ltime|log.Lshortfile)
 	return nil
 }
 
